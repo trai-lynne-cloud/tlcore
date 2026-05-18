@@ -1,3 +1,4 @@
+const Runtime = require('./runtime')
 console.log("[TLCore] Starting Runtime...")
-require('./runtime/index')
+Runtime.start()
 console.log("[TLCore] System Booted")

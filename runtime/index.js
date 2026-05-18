@@ -3,10 +3,19 @@ const BillServ = require('./servs/bill')
 const MonitorServ = require('./servs/monitor')
 const NotifyServ = require('./servs/notify')
 
+const services = [
+  AuthServ,
+  BillServ,
+  MonitorServ,
+  NotifyServ
+];
 
-console.log("[RunTime] Started")
+const Runtime = {
+  start() {
+    console.log("[Runtime] Started");
 
-AuthServ.start()
-BillServ.start()
-MonitorServ.start()
-NotifyServ.start()
+    services.forEach(service => service.start());
+  }
+};
+
+module.exports = Runtime;
