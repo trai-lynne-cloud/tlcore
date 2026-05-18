@@ -1,9 +1,11 @@
+const emitMetric = require("../../shared/utils/emitMetric");
+
 const AuthServ = {
   serviceName: "AuthService",
   interval: 9, // seconds
 
   behavior() {
-    console.log(`[${this.serviceName}] Login attempt`);
+    emitMetric(this.serviceName, "auth_latency", Math.floor(Math.random() * 100));
   },
 
   start() {
