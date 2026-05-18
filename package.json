@@ -1,0 +1,28 @@
+{
+  "name": "tlcore",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "jest tests/*/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trai-lynne-cloud/tlcore.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/trai-lynne-cloud/tlcore/issues"
+  },
+  "homepage": "https://github.com/trai-lynne-cloud/tlcore#readme",
+  "devDependencies": {
+    "jest": "^30.4.2"
+  }
+}

@@ -1,9 +1,11 @@
+const emitMetric = require("../../shared/utils/emitMetric");
+
 const BillServ = {
   serviceName: "BillingService",
-  interval: 1, // seconds
+  interval: 10, // seconds
 
   behavior() {
-    console.log(`[${this.serviceName}] Transaction attempt`);
+    emitMetric(this.serviceName, "billing_queue_depth", Math.floor(Math.random() * 1000));
   },
 
   start() {
