@@ -1,9 +1,11 @@
+const emitMetric = require("../../shared/utils/emitMetric");
+
 const NotifyServ = {
   serviceName: "NotificationService",
   interval: 2, // seconds
 
   behavior() {
-    console.log(`[${this.serviceName}] idle check`);
+    emitMetric(this.serviceName, "notification_queue_depth", Math.floor(Math.random() * 50));
   },
 
   start() {
