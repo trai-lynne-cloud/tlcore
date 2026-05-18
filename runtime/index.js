@@ -1,14 +1,12 @@
 const AuthServ = require('./servs/auth')
 const BillServ = require('./servs/bill')
 const MonitorServ = require('./servs/monitor')
+const NotifyServ = require('./servs/notify')
 
 
-console.log("[RunTime] Runtime Here")
-// require('./servs/auth')
-require('./servs/bill')
-require('./servs/monitor')
-require('./servs/notfication')
+console.log("[RunTime] Started")
 
 AuthServ.start()
 BillServ.start()
 MonitorServ.start()
+NotifyServ.start()
