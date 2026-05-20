@@ -1,3 +1,4 @@
+const createRandom = require("../../shared/utils/createRandom");
 const emitMetric = require("../../shared/utils/emitMetric");
 const failInjectionState = require("../failure/state");
 
@@ -7,8 +8,9 @@ const BillServ = {
 
   behavior() {
     let queue_depth = failInjectionState.queueBacklogSpike ?
-      Math.floor(Math.random() * 5000 - 500 + 1) + 500
-      : Math.floor(Math.random() * 151);
+      createRandom(500, 5000) //
+      : createRandom(0, 150);
+
     emitMetric(this.serviceName, "billing_queue_depth", queue_depth);
   },
 

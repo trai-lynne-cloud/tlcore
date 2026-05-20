@@ -1,3 +1,4 @@
+const createRandom = require("../../shared/utils/createRandom");
 const emitMetric = require("../../shared/utils/emitMetric");
 const failInjectionState = require("../failure/state");
 
@@ -8,8 +9,9 @@ const MonitorServ = {
   behavior() {
     let cpuUsage =
       failInjectionState.cpuSpike ?
-        Math.floor(Math.random() * 100 - 85 + 1) + 85
-        : Math.floor(Math.random() * 60 - 10 + 1) + 10
+        createRandom(85, 100) //
+        : createRandom(10, 60);
+
     emitMetric(this.serviceName, "cpu_utilization", cpuUsage);
   },
 
