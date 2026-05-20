@@ -8,7 +8,7 @@ const MonitorServ = {
 
   behavior() {
 
-    if (failInjectionState.failSpike && Math.random() > 0.5) {
+    if (failInjectionState.failSpike && Math.random() > 0.98) {
       throw new Error("MonitoringService simulated crash");
     }
 
