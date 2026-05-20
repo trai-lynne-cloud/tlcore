@@ -7,6 +7,11 @@ const MonitorServ = {
   interval: 18, // seconds
 
   behavior() {
+
+    if (failInjectionState.failSpike && Math.random() > 0.5) {
+      throw new Error("MonitoringService simulated crash");
+    }
+
     let cpuUsage =
       failInjectionState.cpuSpike ?
         createRandom(85, 100) //

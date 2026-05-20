@@ -1,7 +1,7 @@
 const failInjectionState = {
-  latencySpike: false,
+  latencySpike: true,
   queueBacklogSpike: false,
-  cpuSpike: false,
+  cpuSpike: true,
   failSpike: true
 };
 
