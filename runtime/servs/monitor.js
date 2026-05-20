@@ -1,11 +1,16 @@
 const emitMetric = require("../../shared/utils/emitMetric");
+const failInjectionState = require("../failure/state");
 
 const MonitorServ = {
   serviceName: "MonitoringService",
   interval: 18, // seconds
 
   behavior() {
-    emitMetric(this.serviceName, "cpu_utilization", Math.floor(Math.random() * 100));
+    let cpuUsage =
+      failInjectionState.cpuSpike ?
+        Math.floor(Math.random() * 100 - 85 + 1) + 85
+        : Math.floor(Math.random() * 60 - 10 + 1) + 10
+    emitMetric(this.serviceName, "cpu_utilization", cpuUsage);
   },
 
   start() {
