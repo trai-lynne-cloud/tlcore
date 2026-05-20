@@ -1,11 +1,23 @@
+const createRandom = require("../../shared/utils/createRandom");
 const emitMetric = require("../../shared/utils/emitMetric");
+const failInjectionState = require("../failure/state");
 
 const MonitorServ = {
   serviceName: "MonitoringService",
   interval: 18, // seconds
 
   behavior() {
-    emitMetric(this.serviceName, "cpu_utilization", Math.floor(Math.random() * 100));
+
+    if (failInjectionState.failSpike && Math.random() > 0.5) {
+      throw new Error("MonitoringService simulated crash");
+    }
+
+    let cpuUsage =
+      failInjectionState.cpuSpike ?
+        createRandom(85, 100) //
+        : createRandom(10, 60);
+
+    emitMetric(this.serviceName, "cpu_utilization", cpuUsage);
   },
 
   start() {

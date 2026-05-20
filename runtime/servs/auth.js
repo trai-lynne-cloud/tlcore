@@ -1,11 +1,17 @@
+const createRandom = require("../../shared/utils/createRandom");
 const emitMetric = require("../../shared/utils/emitMetric");
+const failInjectionState = require("../failure/state");
 
 const AuthServ = {
   serviceName: "AuthService",
   interval: 9, // seconds
 
   behavior() {
-    emitMetric(this.serviceName, "auth_latency", Math.floor(Math.random() * 100));
+    let latency = failInjectionState.latencySpike ?
+      createRandom(200, 800)
+      : createRandom(10, 60);
+
+    emitMetric(this.serviceName, "auth_latency", latency);
   },
 
   start() {
