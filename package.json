@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/trai-lynne-cloud/tlcore#readme",
   "devDependencies": {
-    "jest": "^30.4.2"
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.14"
   }
 }
