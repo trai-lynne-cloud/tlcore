@@ -3,3 +3,5 @@ const failInjectionState = {
   queueBacklogSpike: false,
   cpuSpike: false,
 };
+
+module.exports = failInjectionState
