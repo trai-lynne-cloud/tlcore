@@ -1,8 +1,8 @@
 const failInjectionState = {
-  latencySpike: true,
+  latencySpike: false,
   queueBacklogSpike: false,
-  cpuSpike: true,
-  failSpike: true
+  cpuSpike: false,
+  failSpike: false
 };
 
 module.exports = failInjectionState
