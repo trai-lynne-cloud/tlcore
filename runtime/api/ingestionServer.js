@@ -1,8 +1,8 @@
 const express = require('express');
 const emitMetric = require('../../shared/metrics/emitMetric');
+const { getMetrics } = require('../../shared/metrics/metricStore');
 
 const app = express();
-const port = 3000;
 
 app.use(express.json());
 
@@ -26,7 +26,9 @@ app.post('/metrics', (req, res) => {
     res.send('Metrics received!');
 });
 
-// Port Listener 
-app.listen(port, () => {
-    console.log(`Hello World from Port ${port}`);
-})
+app.get('/debug', (req, res) => {
+    const metrics = getMetrics();
+    res.json(metrics);
+});
+
+module.exports = app;

@@ -41,6 +41,12 @@ A centralized in-memory state system controls failure injection behavior across 
 
 ---
 
+### Runtime Model
+
+TLCore runs as a single Node.js process where runtime services and the ingestion API share a common in-memory state.
+
+---
+
 ## Metric System
 
 All services emit structured metrics using a shared utility:
@@ -50,11 +56,44 @@ All services emit structured metrics using a shared utility:
 - metric_value
 - timestamp
 
-Metrics represent real-time system behavior under normal and failure conditions.
+Metrics represent real-time system behavior under normal and failure conditions and are persisted in-memory for runtime observability.
 
 ### Schema Enforcement
 
 Metrics are strictly validated before being converted into structured telemetry objects. This ensures consistency across runtime services and future multi-language ingestion layers.
+
+---
+
+## Metric Storage System (In-Memory State)
+
+TLCore now maintains a centralized in-memory metric store that persists all emitted metrics during runtime execution.
+
+All metrics emitted through runtime services or the ingestion API are stored in a single in-memory store within the Node process.
+
+### Behavior
+
+- Metrics are stored at runtime in a single shared memory space
+- Both runtime services and API ingestion write to the same store
+- Metrics persist for the lifetime of the Node process
+- State is reset only on system restart
+
+### Data Flow
+
+runtime services / API ingestion  
+→ emitMetric  
+→ validateMetric  
+→ createMetric  
+→ storeMetric  
+→ in-memory metricStore  
+
+### Retrieval (Debug Only)
+
+A temporary debug endpoint allows inspection of live system state during development:
+
+- GET /metrics/debug  
+  Returns current in-memory metrics (development only)
+
+This endpoint is not intended for production use and may be removed in later issues.
 
 ---
 
@@ -66,7 +105,7 @@ Metrics are strictly validated before being converted into structured telemetry 
 
 ### Description
 
-Accepts external or internal metric submissions and forwards them into the telemetry pipeline.
+Accepts metric submissions from runtime services or external clients and forwards them into the telemetry pipeline.
 
 ### Request Format
 
