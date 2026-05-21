@@ -1,8 +1,8 @@
-const emitMetric = require("../../shared/metrics/emitMetric");
+const emitMetric = require("../../../shared/metrics/emitMetric");
 
 // Check metric Emission
 
-jest.mock("../../shared/metrics/emitMetric");
+jest.mock("../../../shared/metrics/emitMetric");
 
 describe("Metric Emission", () => {
     it("should emit a metric with correct parameters", () => {
