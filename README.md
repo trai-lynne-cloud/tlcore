@@ -45,12 +45,16 @@ A centralized in-memory state system controls failure injection behavior across 
 
 All services emit structured metrics using a shared utility:
 
-- serviceName
-- metricType
-- value
+- service_id
+- metric_type
+- metric_value
 - timestamp
 
 Metrics represent real-time system behavior under normal and failure conditions.
+
+### Schema Enforcement
+
+Metrics are strictly validated before being converted into structured telemetry objects. This ensures consistency across runtime services and future multi-language ingestion layers.
 
 ---
 
