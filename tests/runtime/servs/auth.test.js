@@ -1,5 +1,5 @@
-const failInjectionState = require("../../runtime/failure/state");
-const AuthServ = require("../../runtime/servs/auth");
+const failInjectionState = require("../../../runtime/failure/state");
+const AuthServ = require("../../../runtime/servs/auth");
 
 describe("Failure Injection - AuthService", () => {
     it("should increase latency when latencySpike is enabled", () => {

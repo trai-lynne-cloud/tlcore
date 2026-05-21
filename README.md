@@ -58,6 +58,35 @@ Metrics are strictly validated before being converted into structured telemetry 
 
 ---
 
+## Metric Ingestion API
+
+### Endpoint
+
+`POST /metrics`
+
+### Description
+
+Accepts external or internal metric submissions and forwards them into the telemetry pipeline.
+
+### Request Format
+
+```json
+{
+  "service_id": "AuthService",
+  "metric_type": "auth_latency",
+  "metric_value": 120
+}
+```
+
+### Behavior
+
+- Validates required fields at the API boundary
+- Rejects malformed requests with HTTP 400
+- Forwards valid metrics into the internal metric pipeline (emitMetric)
+- Produces structured telemetry objects via shared schema
+
+---
+
 ## Failure Injection System
 
 TLCore includes a centralized failure injection state that controls system-wide behavior.
