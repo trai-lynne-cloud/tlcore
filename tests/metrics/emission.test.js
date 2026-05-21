@@ -1,16 +1,16 @@
-const emitMetric = require("../../shared/utils/emitMetric");
+const emitMetric = require("../../shared/metrics/emitMetric");
 
 // Check metric Emission
 
-jest.mock("../../shared/utils/emitMetric");
+jest.mock("../../shared/metrics/emitMetric");
 
 describe("Metric Emission", () => {
     it("should emit a metric with correct parameters", () => {
-        const serviceName = "TestService";
+        const serviceId = "TestService";
         const metricType = "test_metric";
-        const value = 42;
+        const metricValue = 42;
 
-        emitMetric(serviceName, metricType, value);
-        expect(emitMetric).toHaveBeenCalledWith(serviceName, metricType, value);
+        emitMetric(serviceId, metricType, metricValue);
+        expect(emitMetric).toHaveBeenCalledWith(serviceId, metricType, metricValue);
     });
 });
