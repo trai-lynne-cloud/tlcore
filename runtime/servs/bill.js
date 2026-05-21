@@ -1,5 +1,5 @@
 const createRandom = require("../../shared/utils/createRandom");
-const emitMetric = require("../../shared/utils/emitMetric");
+const emitMetric = require("../../shared/metrics/emitMetric");
 const failInjectionState = require("../failure/state");
 
 const BillServ = {
