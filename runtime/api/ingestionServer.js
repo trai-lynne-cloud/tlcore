@@ -9,13 +9,19 @@ app.use(express.json());
 // Ingestion Endpoint
 
 app.post('/metrics', (req, res) => {
-    if (req.body.service_id === undefined || req.body.metric_type === undefined || req.body.metric_value === undefined) {
+    const { service_id, metric_type, metric_value } = req.body;
+
+    if (
+        service_id === undefined ||
+        metric_type === undefined ||
+        metric_value === undefined
+    ) {
         return res.status(400).send('Missing required fields: service_id, metric_type, metric_value');
     }
 
     console.log(req.body);
 
-    emitMetric(req.body.service_id, req.body.metric_type, req.body.metric_value);
+    emitMetric(service_id, metric_type, metric_value);
 
     res.send('Metrics received!');
 });
