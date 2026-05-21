@@ -1,10 +1,10 @@
 const { createMetric } = require("../schemas/metric");
 
-function emitMetric(serviceName, metricType, value) {
-    const metric = createMetric(serviceName, metricType, value);
+function emitMetric(serviceId, metricType, metricValue) {
+    const metric = createMetric(serviceId, metricType, metricValue);
 
     console.log(metric)
-    
+
     return metric;
 }
 

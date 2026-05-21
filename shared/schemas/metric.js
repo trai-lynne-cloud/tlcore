@@ -1,10 +1,10 @@
-function createMetric(serviceName, metricType, value) {
+function createMetric(serviceId, metricType, metricValue) {
     return {
-        serviceName,
-        metricType,
-        value,
+        service_id: serviceId,
+        metric_type: metricType,
+        metric_value: metricValue,
         timestamp: Date.now()
     };
 }
 
-module.exports = {createMetric};
+module.exports = { createMetric };
