@@ -1,5 +1,6 @@
 const express = require('express');
 const emitMetric = require('../../shared/metrics/emitMetric');
+const { getMetrics } = require('../../shared/metrics/metricStore');
 
 const app = express();
 const port = 3000;
@@ -24,6 +25,11 @@ app.post('/metrics', (req, res) => {
     emitMetric(service_id, metric_type, metric_value);
 
     res.send('Metrics received!');
+});
+
+app.get('/debug', (req, res) => {
+    const metrics = getMetrics();
+    res.json(metrics);
 });
 
 // Port Listener 
