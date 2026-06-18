@@ -58,6 +58,8 @@ All services emit structured metrics using a shared utility:
 
 Metrics represent real-time system behavior under normal and failure conditions and are persisted in-memory for runtime observability.
 
+---
+
 ### Schema Enforcement
 
 Metrics are strictly validated before being converted into structured telemetry objects. This ensures consistency across runtime services and future multi-language ingestion layers.
@@ -66,7 +68,7 @@ Metrics are strictly validated before being converted into structured telemetry 
 
 ## Metric Storage System (In-Memory State)
 
-TLCore now maintains a centralized in-memory metric store that persists all emitted metrics during runtime execution.
+TLCore maintains a centralized in-memory metric store that persists all emitted metrics during runtime execution.
 
 All metrics emitted through runtime services or the ingestion API are stored in a single in-memory store within the Node process.
 
@@ -77,6 +79,8 @@ All metrics emitted through runtime services or the ingestion API are stored in 
 - Metrics persist for the lifetime of the Node process
 - State is reset only on system restart
 
+---
+
 ### Data Flow
 
 runtime services / API ingestion  
@@ -86,14 +90,58 @@ runtime services / API ingestion
 → storeMetric  
 → in-memory metricStore  
 
-### Retrieval (Debug Only)
+---
 
-A temporary debug endpoint allows inspection of live system state during development:
+## System Health Evaluation Engine
 
-- GET /metrics/debug  
-  Returns current in-memory metrics (development only)
+TLCore includes a real-time health evaluation layer that interprets live system metrics and converts them into a system-wide state.
 
-This endpoint is not intended for production use and may be removed in later issues.
+The health engine continuously evaluates metrics stored in memory and determines overall system condition.
+
+---
+
+### System States
+
+- **HEALTHY** → System operating normally
+- **DEGRADED** → Elevated latency, CPU usage, or error rates
+- **FAILING** → Severe system instability detected
+- **UNKNOWN** → Insufficient or missing metrics
+
+---
+
+### Evaluation Inputs
+
+The health engine evaluates the latest values of:
+
+- `auth_latency`
+- `cpu_utilization`
+- `notification_fail_rate`
+
+Threshold-based logic is used to determine system state in real time.
+
+---
+
+### Runtime Behavior
+
+- Health engine runs continuously alongside runtime services
+- Reads from the in-memory metric store
+- Computes system state at fixed intervals
+- Outputs current system state during execution
+
+---
+
+### Data Flow
+
+Runtime Services  
+→ Metric Storage (in-memory)  
+→ Health Evaluation Engine  
+→ System State (HEALTHY / DEGRADED / FAILING)
+
+---
+
+### Purpose
+
+This layer introduces the first form of system interpretation, allowing raw runtime metrics to be converted into meaningful operational state.
 
 ---
 
@@ -163,3 +211,4 @@ During development, the runtime environment (e.g. nodemon) may stop execution on
 
 ```bash
 node index.js
+```
