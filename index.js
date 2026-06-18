@@ -17,6 +17,7 @@ app.listen(port, () => {
 
 console.log("[TLCore] System Booted")
 
+// Start System health monitoring
 setInterval(() => {
     const metrics = getMetrics();
     const state = evaluateHealth(metrics);
