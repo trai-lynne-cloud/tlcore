@@ -33,7 +33,7 @@ function evaluateHealth(metrics) {
 
     // DEGRADED 
     if (
-        authLatency >= 10 ||
+        authLatency >= 30 ||
         cpuUtilization > 60 ||
         notificationFailRate > 10
     ) {
