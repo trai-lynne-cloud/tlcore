@@ -58,6 +58,8 @@ All services emit structured metrics using a shared utility:
 
 Metrics represent real-time system behavior under normal and failure conditions and are persisted in-memory for runtime observability.
 
+Metrics are evaluated using a rolling window strategy in downstream health processing.
+
 ---
 
 ### Schema Enforcement
@@ -96,7 +98,7 @@ runtime services / API ingestion
 
 TLCore includes a real-time health evaluation layer that interprets live system metrics and converts them into a system-wide state.
 
-The health engine continuously evaluates metrics stored in memory and determines overall system condition.
+The health engine continuously evaluates metrics stored in memory and determines overall system condition using a rolling window evaluation strategy.
 
 ---
 
@@ -111,22 +113,33 @@ The health engine continuously evaluates metrics stored in memory and determines
 
 ### Evaluation Inputs
 
-The health engine evaluates the latest values of:
+The health engine evaluates:
 
 - `auth_latency`
 - `cpu_utilization`
 - `notification_fail_rate`
 
-Threshold-based logic is used to determine system state in real time.
+---
+
+### Evaluation Strategy
+
+Instead of using single metric points, the health engine now:
+
+- Maintains a rolling window of recent metrics per metric type
+- Applies aggregation (average) over the window
+- Uses aggregated values as inputs for threshold evaluation
+
+This reduces noise and prevents transient spikes from immediately impacting system state.
 
 ---
 
 ### Runtime Behavior
 
 - Health engine runs continuously alongside runtime services
-- Reads from the in-memory metric store
+- Reads from in-memory metric store
+- Applies rolling window + aggregation before evaluation
 - Computes system state at fixed intervals
-- Outputs current system state during execution
+- Outputs current stabilized system state
 
 ---
 
@@ -134,6 +147,7 @@ Threshold-based logic is used to determine system state in real time.
 
 Runtime Services  
 → Metric Storage (in-memory)  
+→ Rolling Window Aggregation Layer  
 → Health Evaluation Engine  
 → System State (HEALTHY / DEGRADED / FAILING)
 
@@ -141,7 +155,7 @@ Runtime Services
 
 ### Purpose
 
-This layer introduces the first form of system interpretation, allowing raw runtime metrics to be converted into meaningful operational state.
+This layer introduces signal stabilization, ensuring system state reflects sustained behavior rather than transient fluctuations.
 
 ---
 
