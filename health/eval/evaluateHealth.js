@@ -1,15 +1,9 @@
 const systemState = require("../state/systemState");
-
-function getLastMetric(metrics, metricType) {
-    for (let i = metrics.length - 1; i >= 0; i--) {
-        if (metrics[i].metric_type === metricType) {
-            return metrics[i].metric_value;
-        }
-    }
-    return 0;
-}
+const getRecentMetricsByType = require("../utils/getLatestMetricsByType");
+const calculateAvg = require("../../shared/utils/calculateAvg")
 
 function evaluateHealth(metrics) {
+    // UNKNOWN
     if (
         metrics === undefined ||
         metrics === null ||
@@ -18,9 +12,10 @@ function evaluateHealth(metrics) {
         return systemState.UNKNOWN;
     }
 
-    const authLatency = getLastMetric(metrics, "auth_latency");
-    const cpuUtilization = getLastMetric(metrics, "cpu_utilization");
-    const notificationFailRate = getLastMetric(metrics, "notification_fail_rate");
+    // Get Aveage of the last 10 metrics for each type
+    const authLatency = calculateAvg(getRecentMetricsByType(metrics, "auth_latency", 10));
+    const cpuUtilization = calculateAvg(getRecentMetricsByType(metrics, "cpu_utilization", 10));
+    const notificationFailRate = calculateAvg(getRecentMetricsByType(metrics, "notification_fail_rate", 10));
 
     // FAILING
     if (
