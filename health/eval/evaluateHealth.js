@@ -1,5 +1,5 @@
 const systemState = require("../state/systemState");
-const getLastMetric = require("../utils/getRecentMetrics");
+const getRecentMetricsByType = require("../utils/getLatestMetricsByType");
 
 function evaluateHealth(metrics) {
     if (
@@ -10,9 +10,9 @@ function evaluateHealth(metrics) {
         return systemState.UNKNOWN;
     }
 
-    const authLatency = getLastMetric(metrics, "auth_latency");
-    const cpuUtilization = getLastMetric(metrics, "cpu_utilization");
-    const notificationFailRate = getLastMetric(metrics, "notification_fail_rate");
+    const authLatency = getRecentMetricsByType(metrics, "auth_latency", 10);
+    const cpuUtilization = getRecentMetricsByType(metrics, "cpu_utilization", 10);
+    const notificationFailRate = getRecentMetricsByType(metrics, "notification_fail_rate", 10);
 
     // FAILING
     if (
