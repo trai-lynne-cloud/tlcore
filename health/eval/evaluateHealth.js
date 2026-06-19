@@ -3,6 +3,7 @@ const getRecentMetricsByType = require("../utils/getLatestMetricsByType");
 const calculateAvg = require("../../shared/utils/calculateAvg")
 
 function evaluateHealth(metrics) {
+    // UNKNOWN
     if (
         metrics === undefined ||
         metrics === null ||
@@ -11,6 +12,7 @@ function evaluateHealth(metrics) {
         return systemState.UNKNOWN;
     }
 
+    // Get Aveage of the last 10 metrics for each type
     const authLatency = calculateAvg(getRecentMetricsByType(metrics, "auth_latency", 10));
     const cpuUtilization = calculateAvg(getRecentMetricsByType(metrics, "cpu_utilization", 10));
     const notificationFailRate = calculateAvg(getRecentMetricsByType(metrics, "notification_fail_rate", 10));

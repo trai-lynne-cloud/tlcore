@@ -14,6 +14,7 @@ app.listen(port, () => {
     console.log(`[TLCore] Ingestion Server Listening on Port ${port}`);
 });
 
+// Start System Health Monitor
 console.log("[TLCore] Starting System Health Monitor...");
 systemHealthMonitor.start();
 

@@ -16,7 +16,7 @@ const SystemHealthMonitor = {
 
             console.log("[SystemHealthMonitor] Health check completed");
             console.log("[SystemHealthMonitor] Current System State:", stableState);
-        }, 3000)
+        }, 10000)
     }
 }
 
