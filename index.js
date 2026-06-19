@@ -3,6 +3,9 @@ const app = require('./runtime/api/ingestionServer')
 const port = 3000;
 const { getMetrics } = require("./shared/metrics/metricStore")
 const evaluateHealth = require("./health/eval/evaluateHealth")
+const getRecentMetrics = require("./health/utils/getRecentMetrics")
+const { addStateToHistory, getStateHistory } = require("./health/state/stateHistory")
+const evaluateStableState = require("./health/eval/evaluateStableState")
 
 // Start Runtime 
 console.log("[TLCore] Starting Runtime...")
@@ -20,8 +23,12 @@ console.log("[TLCore] System Booted")
 // Start System health monitoring
 setInterval(() => {
     const metrics = getMetrics();
-    const state = evaluateHealth(metrics);
+    const recentMetrics = getRecentMetrics(metrics, 50);
+    const currentState = evaluateHealth(recentMetrics);
+    addStateToHistory(currentState);
+
+    const stableState = evaluateStableState(getStateHistory());
 
     console.log("[TLCore] Health check completed");
-    console.log("[TLCore] Current System State:", state);
+    console.log("[TLCore] Current System State:", stableState);
 }, 3000)

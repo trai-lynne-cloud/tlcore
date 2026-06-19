@@ -1,3 +1,5 @@
+const systemState = require('../state/systemState');
+
 function evaluateStableState(stateHistory) {
     if (!stateHistory || stateHistory.length === 0) {
         return systemState.UNKNOWN;
@@ -20,3 +22,5 @@ function evaluateStableState(stateHistory) {
     return systemState.HEALTHY;
 
 }
+
+module.exports = evaluateStableState;
