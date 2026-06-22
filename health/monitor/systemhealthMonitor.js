@@ -1,23 +1,37 @@
-const { getMetrics } = require("../../shared/metrics/metricStore")
-const getRecentMetrics = require("../utils/getRecentMetrics")
-const evaluateHealth = require("../eval/evaluateHealth")
-const evaluateStableState = require("../eval/evaluateStableState")
-const { addStateToHistory, getStateHistory } = require("../state/stateHistory")
+const getRecentMetrics = require("../utils/getRecentMetrics");
+const evaluateHealth = require("../eval/evaluateHealth");
+const evaluateStableState = require("../eval/evaluateStableState");
+const { addStateToHistory, getStateHistory } = require("../state/stateHistory");
+const recordStateTransition = require("../state/recordStateTransition");
 
 const SystemHealthMonitor = {
     start() {
+        this.tick();
+
         setInterval(() => {
-            const metrics = getMetrics();
-            const recentMetrics = getRecentMetrics(metrics, 50);
-            const currentState = evaluateHealth(recentMetrics);
-            addStateToHistory(currentState);
+            this.tick();
+        }, 10000);
+    },
 
-            const stableState = evaluateStableState(getStateHistory());
+    tick() {
+        const stableState = this.runEvaluation();
+        console.log("[SystemHealthMonitor] Health check completed");
+        console.log("[SystemHealthMonitor] Current System State:", stableState);
+    },
 
-            console.log("[SystemHealthMonitor] Health check completed");
-            console.log("[SystemHealthMonitor] Current System State:", stableState);
-        }, 10000)
-    }
-}
+    runEvaluation() {
+        const recentMetrics = getRecentMetrics(50);
 
-module.exports = SystemHealthMonitor;
+        const currentState = evaluateHealth(recentMetrics);
+
+        addStateToHistory(currentState);
+
+        const stableState = evaluateStableState(getStateHistory());
+
+        recordStateTransition(stableState);
+
+        return stableState;
+    },
+};
+
+module.exports = SystemHealthMonitor; 
