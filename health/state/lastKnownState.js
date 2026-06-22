@@ -1,14 +1,16 @@
-let lastKnownState = null;
+const systemState = require("./systemState");
+
+let lastKnownState = systemState.UNKNOWN;
 
 function getLastKnownState(){
     return lastKnownState;
 };
 
-function setlastKnownState(state){
+function setLastKnownState(state){
     lastKnownState = state;
 }
 
 module.exports = {
     getLastKnownState,
-    setlastKnownState
+    setLastKnownState
 };
