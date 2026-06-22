@@ -74,6 +74,8 @@ TLCore maintains a centralized in-memory metric store that persists all emitted 
 
 All metrics emitted through runtime services or the ingestion API are stored in a single in-memory store within the Node process.
 
+---
+
 ### Behavior
 
 - Metrics are stored at runtime in a single shared memory space
@@ -123,7 +125,7 @@ The health engine evaluates:
 
 ### Evaluation Strategy
 
-Instead of using single metric points, the health engine now:
+Instead of using single metric points, the health engine:
 
 - Maintains a rolling window of recent metrics per metric type
 - Applies aggregation (average) over the window
@@ -156,6 +158,84 @@ Runtime Services
 ### Purpose
 
 This layer introduces signal stabilization, ensuring system state reflects sustained behavior rather than transient fluctuations.
+
+---
+
+## State History System
+
+TLCore now maintains a bounded history of recent system states.
+
+This allows the system to smooth transient instability and evaluate stability over time.
+
+### Behavior
+
+- Stores recent evaluated states
+- Maintains a maximum history size (rolling buffer)
+- Used to reduce oscillation in system state reporting
+
+---
+
+## Stable State Evaluation
+
+A stability layer evaluates the history of recent system states.
+
+### Logic
+
+- If FAILING appears frequently → system is FAILING
+- If DEGRADED dominates → system is DEGRADED
+- Otherwise → system is HEALTHY
+
+### Purpose
+
+Prevents rapid flipping between states caused by short-lived metric spikes.
+
+---
+
+## State Transition System
+
+TLCore now records transitions between system states as structured events.
+
+A transition is only recorded when the system state changes.
+
+---
+
+### Transition Object Structure
+
+Each transition includes:
+
+- `from` → previous system state
+- `to` → new system state
+- `timestamp` → ISO timestamp of transition
+- `metrics` → snapshot of recent metrics at time of transition
+
+---
+
+### Behavior
+
+- Detects changes in stable system state
+- Prevents duplicate transition logs
+- Stores transitions in an in-memory transition store
+- Maintains last known state to prevent redundant entries
+
+---
+
+### Data Flow
+
+Stable State  
+→ Change Detection  
+→ Transition Object Creation  
+→ Transition Store  
+→ Last Known State Update  
+
+---
+
+### Purpose
+
+This introduces the first event-based layer in TLCore:
+
+- Enables system change tracking
+- Provides audit trail for state evolution
+- Prepares system for incident detection
 
 ---
 
