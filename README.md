@@ -18,10 +18,34 @@ A centralized in-memory state system controls failure injection behavior across 
 
 ## System Architecture
 
-### Runtime Engine
+### Runtime Layer
 - Starts and manages all services
 - Runs continuously in a loop
 - Emits metrics at service-defined intervals
+
+---
+
+## Control Layer
+
+TLCore now includes a control API that manages runtime execution state.
+
+This layer introduces **system intent control** without yet altering service execution behavior.
+
+### Supported Operations
+- Start runtime
+- Stop runtime
+- Query runtime status
+
+### Runtime States
+- **RUNNING** → system is logically active
+- **STOPPED** → system is logically inactive
+
+### Behavior
+- Runtime state is stored in-memory and updated via control API
+- API updates system runtime state via controlled controller layer
+- Status is consistently returned in structured responses
+- Runtime execution is not yet gated by state (by design for this phase). 
+- Future work will connect runtime state to actual service execution behavior.
 
 ---
 
@@ -41,7 +65,7 @@ A centralized in-memory state system controls failure injection behavior across 
 
 ---
 
-### Runtime Model
+### Telemetry Layer
 
 TLCore runs as a single Node.js process where runtime services and the ingestion API share a common in-memory state.
 
