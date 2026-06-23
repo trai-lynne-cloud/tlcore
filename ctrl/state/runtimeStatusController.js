@@ -2,10 +2,12 @@
 const runtimeState = require('./runtimeState');
 const runtimeStatus = require('./runtimeStatus');
 
+// Read runtime status from the runtimeState module and return the corresponding status string.
 function getRuntimeStatus() {
     return runtimeState.isRunning ? runtimeStatus.RUNNING : runtimeStatus.STOPPED;
 }
 
+// Set the runtime status in the runtimeState module based on the provided status string.
 function setRuntimeStatus(status) {
     if (status === runtimeStatus.RUNNING) {
         console.log("[TLCore] Setting runtime status to RUNNING");
