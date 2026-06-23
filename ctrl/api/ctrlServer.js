@@ -1,25 +1,44 @@
 const express = require('express');
+const { getRuntimeStatus, startRuntime, stopRuntime } = require('../runtime/runtimeController');
 
 const app = express();
 
 app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.status(200).send('[TLCore] Control Server is running');
+    
+    const message = '[TLCore] Control Server is running';
+    console.log(message);
+    res.status(200).json({ message });
 });
 
 app.get('/control/status', (req, res) => {
-    res.status(200).send('[TLCore] Control Server Status is ready.');
+    const status = getRuntimeStatus();
+
+    const message = `[TLCore] Control Server Status is ${status}.`;
+
+    console.log(message);
+    res.status(200).json({ runtimeStatus: status, message });
 });
 
 app.post('/control/start', (req, res) => {
     // Handle start logic
-    res.status(200).send('[TLCore] Start command received');
+    startRuntime();
+
+    const message = `[TLCore] Control Server Status is ${getRuntimeStatus()}.`;
+    
+    console.log(message);
+    res.status(200).json({ runtimeStatus: getRuntimeStatus(), message });
 });
 
 app.post('/control/stop', (req, res) => {
     // Handle stop logic
-    res.status(200).send('[TLCore] Stop command received');
+    stopRuntime();
+
+    const message = `[TLCore] Control Server Status is ${getRuntimeStatus()}.`;
+
+    console.log(message);
+    res.status(200).json({ runtimeStatus: getRuntimeStatus(), message });
 });
 
 module.exports = app;

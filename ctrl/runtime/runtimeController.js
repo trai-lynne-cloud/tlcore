@@ -1,32 +1,34 @@
 const {getRuntimeStatus, setRuntimeStatus} = require('../state/runtimeStatusController');
+const runtimeStatus = require('../state/runtimeStatus');
 
 function startRuntime() {
     const status = getRuntimeStatus();
-    if (status === 'RUNNING') {
-        console.log("Runtime is already running.");
+    if (status === runtimeStatus.RUNNING) {
+        console.log("[TLCore] Runtime is already running.");
         return;
     }
-    console.log("Starting runtime...");
+    console.log("[TLCore] Starting runtime...");
     
-    setRuntimeStatus('RUNNING');
+    setRuntimeStatus(runtimeStatus.RUNNING);
 
-    console.log("Runtime started.");
+    console.log("[TLCore] Runtime started.");
 }  
 
 function stopRuntime() {
     const status = getRuntimeStatus();
-    if (status === 'STOPPED') {
-        console.log("Runtime is already stopped.");
+    if (status === runtimeStatus.STOPPED) {
+        console.log("[TLCore] Runtime is already stopped.");
         return;
     }
-    console.log("Stopping runtime...");
+    console.log("[TLCore] Stopping runtime...");
     
-    setRuntimeStatus('STOPPED');
+    setRuntimeStatus(runtimeStatus.STOPPED);
     
-    console.log("Runtime stopped.");
+    console.log("[TLCore] Runtime stopped.");
 }
 
 module.exports = {
+    getRuntimeStatus,
     startRuntime,
     stopRuntime
 };
