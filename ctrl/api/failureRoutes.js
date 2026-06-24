@@ -11,14 +11,21 @@ router.get('/control/fail-state', (req, res) => {
 
 // Handle POST request to /control/trigger/:flag 
 router.post('/control/trigger/:flag', (req, res) => {
-    try {
-        const flag = req.params.flag
+    const flag = req.params.flag;
 
-        let failState = enableFailure(flag)
+    if (!flag || typeof flag !== "string") {
+        return res.status(400).json({
+            message: "Missing or invalid failure flag"
+        });
+    }
+
+    try {
+
+        let updatedFailState = enableFailure(flag)
 
         res.status(200).json({
             "message": "Failure state updated",
-            "currentFailState": failState
+            "currentFailState": updatedFailState
         })
     } catch (error) {
         res.status(400).json({
