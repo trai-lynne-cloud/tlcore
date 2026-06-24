@@ -12,7 +12,7 @@ function enableFailure(failFlag){
 
     if(failInjectionState[failFlag]) {throw new Error(`${failFlag} already enabled`)}
         
-    console.log(`[TLCore] Triggering Failure: ${failFlag}`)
+    console.log(`[TLCore] Enabling Failure: ${failFlag}`)
 
     failInjectionState[failFlag] = true;
 

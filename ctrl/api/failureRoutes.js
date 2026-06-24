@@ -1,5 +1,5 @@
 const express = require('express');
-const { getFailState, enableFailure } = require('../failure/failureController');
+const { getFailState, enableFailure, disableFailure } = require('../failure/failureController');
 const router = express.Router();
 
 // Handle GET request to /control/fail-state endpoint
@@ -10,10 +10,10 @@ router.get('/control/fail-state', (req, res) => {
 });
 
 // Handle POST request to /control/trigger/:flag 
-router.post('/control/trigger/:flag', (req, res) => {
+router.post('/ctrl/fail/trigger/:flag', (req, res) => {
     const flag = req.params.flag;
 
-    if (!flag || typeof flag !== "string") {
+    if (!flag || flag.length < 1) {
         return res.status(400).json({
             message: "Missing or invalid failure flag"
         });
@@ -24,7 +24,32 @@ router.post('/control/trigger/:flag', (req, res) => {
         let updatedFailState = enableFailure(flag)
 
         res.status(200).json({
-            "message": "Failure state updated",
+            "message": `[TLCore] ${flag} enabled`,
+            "currentFailState": updatedFailState
+        })
+    } catch (error) {
+        res.status(400).json({
+            message: error.message
+        })
+    }
+})
+
+// Handle POST request to /control/disable/:flag 
+router.post('/ctrl/fail/recover/:flag', (req, res) => {
+    const flag = req.params.flag;
+
+    if (!flag || flag.length < 1) {
+        return res.status(400).json({
+            message: "Missing or invalid failure flag"
+        });
+    }
+
+    try {
+
+        let updatedFailState = disableFailure(flag)
+
+        res.status(200).json({
+            "message": `[TLCore] ${flag} recovered`,
             "currentFailState": updatedFailState
         })
     } catch (error) {
