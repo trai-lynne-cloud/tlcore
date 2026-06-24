@@ -12,60 +12,96 @@ TLCore runs a set of independent services that continuously emit synthetic metri
 
 Each service operates on its own interval and produces structured output representing system behavior over time.
 
-A centralized in-memory state system controls failure injection behavior across all services.
+A centralized in-memory state system controls runtime behavior and failure injection across all services.
 
 ---
 
 ## System Architecture
 
 ### Runtime Layer
-- Starts and manages all services
-- Runs continuously in a loop
-- Emits metrics at service-defined intervals
+
+* Starts and manages all services
+* Runs continuously in a loop
+* Emits metrics at service-defined intervals
 
 ---
 
 ## Control Layer
 
-TLCore now includes a control API that manages runtime execution state.
+TLCore includes a control API that manages both runtime execution state and failure injection state.
 
-This layer introduces **system intent control** without yet altering service execution behavior.
+This layer introduces **system intent control** (start/stop/fail injection) without immediately altering runtime execution behavior.
+
+---
 
 ### Supported Operations
-- Start runtime
-- Stop runtime
-- Query runtime status
+
+#### Runtime Control
+
+* Start runtime
+* Stop runtime
+* Query runtime status
+
+#### Failure Control
+
+* Enable failure modes
+* Query failure state
+
+---
 
 ### Runtime States
-- **RUNNING** → system is logically active
-- **STOPPED** → system is logically inactive
+
+* **RUNNING** → system is logically active
+* **STOPPED** → system is logically inactive
+
+> Note: Runtime state currently represents system intent only. Services are not yet gated by runtime state.
+
+---
+
+### Failure States
+
+Failure injection is controlled via boolean flags:
+
+* `latencySpike`
+* `queueBacklogSpike`
+* `cpuSpike`
+* `failSpike`
+
+Each flag modifies runtime behavior when evaluated by services.
+
+---
 
 ### Behavior
-- Runtime state is stored in-memory and updated via control API
-- API updates system runtime state via controlled controller layer
-- Status is consistently returned in structured responses
-- Runtime execution is not yet gated by state (by design for this phase). 
-- Future work will connect runtime state to actual service execution behavior.
+
+* Runtime state is stored in-memory and updated via control API
+* Failure state is stored in-memory and updated via control API
+* State updates are handled through dedicated controller layers
+* Responses return structured JSON for observability and debugging
+* Runtime execution is not yet conditionally halted (by design for current phase)
 
 ---
 
-### Services
+## Services
 
-- **AuthService**
-  - Simulates authentication latency
+* **AuthService**
 
-- **BillingService**
-  - Simulates queue depth behavior
+  * Simulates authentication latency
 
-- **MonitoringService**
-  - Simulates CPU utilization and system-level crash conditions
+* **BillingService**
 
-- **NotificationService**
-  - Simulates queue depth, failure rates, and error conditions
+  * Simulates queue depth behavior
+
+* **MonitoringService**
+
+  * Simulates CPU utilization and system-level crash conditions
+
+* **NotificationService**
+
+  * Simulates queue depth, failure rates, and error conditions
 
 ---
 
-### Telemetry Layer
+## Telemetry Layer
 
 TLCore runs as a single Node.js process where runtime services and the ingestion API share a common in-memory state.
 
@@ -75,10 +111,10 @@ TLCore runs as a single Node.js process where runtime services and the ingestion
 
 All services emit structured metrics using a shared utility:
 
-- service_id
-- metric_type
-- metric_value
-- timestamp
+* service_id
+* metric_type
+* metric_value
+* timestamp
 
 Metrics represent real-time system behavior under normal and failure conditions and are persisted in-memory for runtime observability.
 
@@ -88,7 +124,9 @@ Metrics are evaluated using a rolling window strategy in downstream health proce
 
 ### Schema Enforcement
 
-Metrics are strictly validated before being converted into structured telemetry objects. This ensures consistency across runtime services and future multi-language ingestion layers.
+Metrics are strictly validated before being converted into structured telemetry objects.
+
+This ensures consistency across runtime services and future multi-language ingestion layers.
 
 ---
 
@@ -102,21 +140,21 @@ All metrics emitted through runtime services or the ingestion API are stored in 
 
 ### Behavior
 
-- Metrics are stored at runtime in a single shared memory space
-- Both runtime services and API ingestion write to the same store
-- Metrics persist for the lifetime of the Node process
-- State is reset only on system restart
+* Metrics are stored at runtime in a single shared memory space
+* Both runtime services and API ingestion write to the same store
+* Metrics persist for the lifetime of the Node process
+* State is reset only on system restart
 
 ---
 
 ### Data Flow
 
-runtime services / API ingestion  
-→ emitMetric  
-→ validateMetric  
-→ createMetric  
-→ storeMetric  
-→ in-memory metricStore  
+runtime services / API ingestion
+→ emitMetric
+→ validateMetric
+→ createMetric
+→ storeMetric
+→ in-memory metricStore
 
 ---
 
@@ -130,20 +168,18 @@ The health engine continuously evaluates metrics stored in memory and determines
 
 ### System States
 
-- **HEALTHY** → System operating normally
-- **DEGRADED** → Elevated latency, CPU usage, or error rates
-- **FAILING** → Severe system instability detected
-- **UNKNOWN** → Insufficient or missing metrics
+* **HEALTHY** → System operating normally
+* **DEGRADED** → Elevated latency, CPU usage, or error rates
+* **FAILING** → Severe system instability detected
+* **UNKNOWN** → Insufficient or missing metrics
 
 ---
 
 ### Evaluation Inputs
 
-The health engine evaluates:
-
-- `auth_latency`
-- `cpu_utilization`
-- `notification_fail_rate`
+* `auth_latency`
+* `cpu_utilization`
+* `notification_fail_rate`
 
 ---
 
@@ -151,9 +187,9 @@ The health engine evaluates:
 
 Instead of using single metric points, the health engine:
 
-- Maintains a rolling window of recent metrics per metric type
-- Applies aggregation (average) over the window
-- Uses aggregated values as inputs for threshold evaluation
+* Maintains a rolling window of recent metrics per metric type
+* Applies aggregation (average) over the window
+* Uses aggregated values as inputs for threshold evaluation
 
 This reduces noise and prevents transient spikes from immediately impacting system state.
 
@@ -161,20 +197,20 @@ This reduces noise and prevents transient spikes from immediately impacting syst
 
 ### Runtime Behavior
 
-- Health engine runs continuously alongside runtime services
-- Reads from in-memory metric store
-- Applies rolling window + aggregation before evaluation
-- Computes system state at fixed intervals
-- Outputs current stabilized system state
+* Health engine runs continuously alongside runtime services
+* Reads from in-memory metric store
+* Applies rolling window + aggregation before evaluation
+* Computes system state at fixed intervals
+* Outputs current stabilized system state
 
 ---
 
 ### Data Flow
 
-Runtime Services  
-→ Metric Storage (in-memory)  
-→ Rolling Window Aggregation Layer  
-→ Health Evaluation Engine  
+Runtime Services
+→ Metric Storage (in-memory)
+→ Rolling Window Aggregation Layer
+→ Health Evaluation Engine
 → System State (HEALTHY / DEGRADED / FAILING)
 
 ---
@@ -187,15 +223,17 @@ This layer introduces signal stabilization, ensuring system state reflects susta
 
 ## State History System
 
-TLCore now maintains a bounded history of recent system states.
+TLCore maintains a bounded history of recent system states.
 
 This allows the system to smooth transient instability and evaluate stability over time.
 
+---
+
 ### Behavior
 
-- Stores recent evaluated states
-- Maintains a maximum history size (rolling buffer)
-- Used to reduce oscillation in system state reporting
+* Stores recent evaluated states
+* Maintains a maximum history size (rolling buffer)
+* Used to reduce oscillation in system state reporting
 
 ---
 
@@ -203,11 +241,15 @@ This allows the system to smooth transient instability and evaluate stability ov
 
 A stability layer evaluates the history of recent system states.
 
+---
+
 ### Logic
 
-- If FAILING appears frequently → system is FAILING
-- If DEGRADED dominates → system is DEGRADED
-- Otherwise → system is HEALTHY
+* If FAILING appears frequently → system is FAILING
+* If DEGRADED dominates → system is DEGRADED
+* Otherwise → system is HEALTHY
+
+---
 
 ### Purpose
 
@@ -217,7 +259,7 @@ Prevents rapid flipping between states caused by short-lived metric spikes.
 
 ## State Transition System
 
-TLCore now records transitions between system states as structured events.
+TLCore records transitions between system states as structured events.
 
 A transition is only recorded when the system state changes.
 
@@ -227,29 +269,10 @@ A transition is only recorded when the system state changes.
 
 Each transition includes:
 
-- `from` → previous system state
-- `to` → new system state
-- `timestamp` → ISO timestamp of transition
-- `metrics` → snapshot of recent metrics at time of transition
-
----
-
-### Behavior
-
-- Detects changes in stable system state
-- Prevents duplicate transition logs
-- Stores transitions in an in-memory transition store
-- Maintains last known state to prevent redundant entries
-
----
-
-### Data Flow
-
-Stable State  
-→ Change Detection  
-→ Transition Object Creation  
-→ Transition Store  
-→ Last Known State Update  
+* `from` → previous system state
+* `to` → new system state
+* `timestamp` → ISO timestamp
+* `metrics` → snapshot of recent metrics at time of transition
 
 ---
 
@@ -257,9 +280,9 @@ Stable State
 
 This introduces the first event-based layer in TLCore:
 
-- Enables system change tracking
-- Provides audit trail for state evolution
-- Prepares system for incident detection
+* Enables system change tracking
+* Provides audit trail for state evolution
+* Prepares system for incident detection
 
 ---
 
@@ -273,6 +296,8 @@ This introduces the first event-based layer in TLCore:
 
 Accepts metric submissions from runtime services or external clients and forwards them into the telemetry pipeline.
 
+---
+
 ### Request Format
 
 ```json
@@ -283,35 +308,38 @@ Accepts metric submissions from runtime services or external clients and forward
 }
 ```
 
+---
+
 ### Behavior
 
-- Validates required fields at the API boundary
-- Rejects malformed requests with HTTP 400
-- Forwards valid metrics into the internal metric pipeline (emitMetric)
-- Produces structured telemetry objects via shared schema
+* Validates required fields at API boundary
+* Rejects malformed requests with HTTP 400
+* Forwards valid metrics into internal metric pipeline
+* Produces structured telemetry objects via shared schema
 
 ---
 
 ## Failure Injection System
 
-TLCore includes a centralized failure injection state that controls system-wide behavior.
+Failure injection is controlled via API-driven state mutation.
+
+---
 
 ### Failure Flags
 
-- `latencySpike`
-  - Increases authentication latency
+* `latencySpike` → increases authentication latency
+* `queueBacklogSpike` → increases queue depth across services
+* `cpuSpike` → increases CPU utilization in MonitoringService
+* `failSpike` → enables system-wide instability simulation
 
-- `queueBacklogSpike`
-  - Increases queue depth across services
+---
 
-- `cpuSpike`
-  - Increases CPU utilization in MonitoringService
+### Behavior
 
-- `failSpike`
-  - Enables system-wide failure mode including:
-    - error rate spikes
-    - simulated service failures
-    - occasional runtime crashes
+* Failure state is stored in-memory
+* Flags are toggled via control API
+* Services will interpret flags during execution
+* Enables controlled observability testing scenarios
 
 ---
 
@@ -321,7 +349,7 @@ When `failSpike` is enabled, MonitoringService may randomly crash during executi
 
 This simulates real-world service instability where processes can terminate unexpectedly.
 
-During development, the runtime environment (e.g. nodemon) may stop execution on crash and may require manual restart depending on configuration.
+During development, runtime tooling (e.g. nodemon) may stop execution and require manual restart depending on configuration.
 
 ---
 
