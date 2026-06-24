@@ -7,15 +7,27 @@ function getFailState(){
 
 // Update failure state 
 function enableFailure(failFlag){
-    let currentFailState = getFailState();
 
     if(!validateFailFlag(failFlag)) {throw new Error(`Invalid fail flag: ${failFlag}`)}
 
-    if(currentFailState[failFlag]) {throw new Error(`${failFlag} already enabled`)}
+    if(failInjectionState[failFlag]) {throw new Error(`${failFlag} already enabled`)}
         
-    console.log(`[TLCore] Triggering Failure: ${failFlag}`)
+    console.log(`[TLCore] Enabling Failure: ${failFlag}`)
 
     failInjectionState[failFlag] = true;
+
+    return getFailState();
+}
+
+function disableFailure(failFlag){
+
+    if(!validateFailFlag(failFlag)) {throw new Error(`Invalid fail flag: ${failFlag}`)}
+
+    if(!failInjectionState[failFlag]) {throw new Error(`${failFlag} already disabled`)}
+
+    console.log(`[TLCore] Disabling Failure: ${failFlag}`)
+
+    failInjectionState[failFlag] = false;
 
     return getFailState();
 }
@@ -27,5 +39,6 @@ function validateFailFlag(flag){
 
 module.exports = {
     getFailState,
-    enableFailure
+    enableFailure,
+    disableFailure
 }
