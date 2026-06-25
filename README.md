@@ -2,17 +2,17 @@
 
 TLCore is a lightweight runtime system that simulates multi-service behavior and controlled failure conditions for observability testing.
 
-It is designed to model continuous service execution, metric emission, and system degradation under controlled fault injection.
+It is designed to model continuous service execution, metric emission, system incidents, and system degradation under controlled fault injection.
 
 ---
 
 ## Overview
 
-TLCore runs a set of independent services that continuously emit synthetic metrics.
+TLCore runs a set of independent services that continuously emit synthetic metrics and can generate structured incident events under failure conditions.
 
 Each service operates on its own interval and produces structured output representing system behavior over time.
 
-A centralized in-memory state system controls runtime behavior and failure injection across all services.
+A centralized in-memory state system controls runtime behavior, failure injection, and incident generation across all services.
 
 ---
 
@@ -20,9 +20,10 @@ A centralized in-memory state system controls runtime behavior and failure injec
 
 ### Runtime Layer
 
-- Starts and manages all services
-- Runs continuously in a loop
-- Emits metrics at service-defined intervals
+* Starts and manages all services
+* Runs continuously in a loop
+* Emits metrics at service-defined intervals
+* Can generate incident events during failures
 
 ---
 
@@ -30,10 +31,11 @@ A centralized in-memory state system controls runtime behavior and failure injec
 
 TLCore exposes a control API for managing:
 
-- Runtime execution state
-- Failure injection state
+* Runtime execution state
+* Failure injection state
+* Incident simulation
 
-This layer provides **system intent control** (start/stop/restart/fail/recover) without directly blocking runtime execution behavior (for this phase).
+This layer provides **system intent control** (start/stop/restart/fail/recover/trigger incidents) without directly blocking runtime execution behavior.
 
 ---
 
@@ -41,23 +43,28 @@ This layer provides **system intent control** (start/stop/restart/fail/recover) 
 
 #### Runtime Control
 
-- Start runtime
-- Stop runtime
-- Restart runtime
-- Query runtime status
+* Start runtime
+* Stop runtime
+* Restart runtime
+* Query runtime status
 
 #### Failure Control
 
-- Enable failure modes (trigger)
-- Disable failure modes (recover)
-- Query failure state
+* Enable failure modes (trigger)
+* Disable failure modes (recover)
+* Query failure state
+
+#### Incident Control
+
+* Trigger synthetic incidents
+* Query incident history
 
 ---
 
 ## Runtime States
 
-- **RUNNING** → system is logically active
-- **STOPPED** → system is logically inactive
+* **RUNNING** → system is logically active
+* **STOPPED** → system is logically inactive
 
 > Note: Runtime state represents system intent only. Services are not yet gated by runtime state.
 
@@ -67,12 +74,34 @@ This layer provides **system intent control** (start/stop/restart/fail/recover) 
 
 Failure injection is controlled via boolean flags:
 
-- `latencySpike`
-- `queueBacklogSpike`
-- `cpuSpike`
-- `failSpike`
+* `latencySpike`
+* `queueBacklogSpike`
+* `cpuSpike`
+* `failSpike`
 
 Each flag modifies runtime behavior when evaluated by services.
+
+---
+
+## Incident Model (Issue 14)
+
+TLCore includes a structured incident data model representing system failure events.
+
+### Incident Schema
+
+Each incident includes:
+
+* `service_id` → service generating the incident
+* `severity` → severity level of incident
+* `start_time` → ISO timestamp of incident creation
+
+### Behavior
+
+* Incidents are created in-memory only
+* Incidents are immutable once created
+* Incidents are stored in a centralized incident store
+* Incidents can be retrieved via API
+* All incidents follow a consistent schema across the system
 
 ---
 
@@ -80,70 +109,64 @@ Each flag modifies runtime behavior when evaluated by services.
 
 ### Runtime Control
 
-- `GET /ctrl/runtime/status`
-- `POST /ctrl/runtime/start`
-- `POST /ctrl/runtime/stop`
-- `POST /ctrl/runtime/restart`
-
-**Restart Behavior:**
-- Executes `stopRuntime()`
-- Then executes `startRuntime()`
-- Validates final runtime state transitions
+* `GET /ctrl/runtime/status`
+* `POST /ctrl/runtime/start`
+* `POST /ctrl/runtime/stop`
+* `POST /ctrl/runtime/restart`
 
 ---
 
 ### Failure Control
 
-- `GET /control/fail-state`
-- `POST /ctrl/fail/trigger/:flag`
-  - Enables a failure flag
-- `POST /ctrl/fail/recover/:flag`
-  - Disables (recovers) a failure flag
+* `GET /ctrl/fail-state`
+* `POST /ctrl/fail/trigger/:flag`
+* `POST /ctrl/fail/recover/:flag`
 
 ---
 
-### Failure Behavior Rules
+### Incident Control
 
-- Invalid flags → return `400 error`
-- Already enabled flag → error thrown
-- Already disabled flag → error thrown
-- All state changes are in-memory only
-- Responses return structured JSON for observability
+* `GET /incidents` → retrieve all incidents
+* `POST /ctrl/incidents/trigger` → create new incident
 
 ---
 
 ## Behavior Model
 
-- Runtime state is stored in-memory
-- Failure state is stored in-memory
-- State updates go through controller layers
-- Failure state supports BOTH:
-  - activation (trigger)
-  - recovery (disable)
-- Runtime execution is not yet conditionally halted (by design)
-- Restart is a **logical restart of runtime state**, not process lifecycle management
+* Runtime state is stored in-memory
+* Failure state is stored in-memory
+* Incident state is stored in-memory
+* All state updates go through controller layers
+* Failure system supports activation + recovery
+* Incident system supports creation + retrieval
+* Runtime execution is not yet conditionally halted (by design)
+* Restart is a logical runtime reset, not process lifecycle management
 
 ---
 
 ## Services
 
-- **AuthService**
-  - Simulates authentication latency
+* **AuthService**
 
-- **BillingService**
-  - Simulates queue depth behavior
+  * Simulates authentication latency
 
-- **MonitoringService**
-  - Simulates CPU utilization and crash conditions
+* **BillingService**
 
-- **NotificationService**
-  - Simulates queue depth, failure rates, and error conditions
+  * Simulates queue depth behavior
+
+* **MonitoringService**
+
+  * Simulates CPU utilization and crash conditions
+
+* **NotificationService**
+
+  * Simulates queue depth, failure rates, and error conditions
 
 ---
 
 ## Telemetry Layer
 
-TLCore runs as a single Node.js process where runtime services and the ingestion API share a shared in-memory state.
+TLCore runs as a single Node.js process where runtime services, metrics, and incidents share a common in-memory state.
 
 ---
 
@@ -151,119 +174,76 @@ TLCore runs as a single Node.js process where runtime services and the ingestion
 
 All services emit structured metrics using a shared utility:
 
-- service_id
-- metric_type
-- metric_value
-- timestamp
+* service_id
+* metric_type
+* metric_value
+* timestamp
 
 Metrics represent real-time system behavior under normal and failure conditions.
 
-They are persisted in-memory for runtime observability.
+They are persisted in-memory.
 
 Metrics are evaluated using a rolling window strategy in downstream health processing.
 
 ---
 
-### Schema Enforcement
+## Metric Storage System
 
-Metrics are validated before being converted into structured telemetry objects.
-
-This ensures consistency across runtime services and future ingestion layers.
-
----
-
-## Metric Storage System (In-Memory State)
-
-TLCore maintains a centralized in-memory metric store that persists all emitted metrics during runtime execution.
-
----
+TLCore maintains a centralized in-memory metric store that persists all emitted metrics.
 
 ### Behavior
 
-- Metrics stored in a single shared memory space
-- Runtime services and API ingestion write to the same store
-- Metrics persist for the lifetime of the Node process
-- State resets only on restart
-
----
-
-### Data Flow
-
-runtime services / API ingestion  
-→ emitMetric  
-→ validateMetric  
-→ createMetric  
-→ storeMetric  
-→ in-memory metricStore  
+* Shared memory space for all metrics
+* Runtime services and API ingestion write to same store
+* Metrics persist for lifetime of process
+* Reset only occurs on restart
 
 ---
 
 ## System Health Evaluation Engine
 
-TLCore includes a real-time health evaluation layer that converts metrics into system-wide state.
-
----
-
-### System States
-
-- HEALTHY
-- DEGRADED
-- FAILING
-- UNKNOWN
-
----
-
-### Evaluation Strategy
-
-- Uses rolling window of metrics
-- Applies aggregation (average)
-- Prevents transient spikes from triggering instability
-
----
-
-### Runtime Behavior
-
-- Runs continuously alongside services
-- Reads from in-memory metric store
-- Produces stabilized system state
-
----
-
-### Data Flow
-
-Runtime Services  
-→ Metric Storage  
-→ Rolling Window Aggregation  
-→ Health Evaluation Engine  
-→ System State
+* Uses rolling window of metrics
+* Applies aggregation (average)
+* Prevents transient spikes from triggering instability
+* Produces stabilized system state
 
 ---
 
 ## State History System
 
-- Stores recent system states in bounded memory
-- Prevents oscillation in system state reporting
+* Stores recent system states in bounded memory
+* Prevents oscillation in system state reporting
 
 ---
 
 ## Stable State Evaluation
 
-- FAILING dominant → FAILING
-- DEGRADED dominant → DEGRADED
-- Otherwise → HEALTHY
+* FAILING dominant → FAILING
+* DEGRADED dominant → DEGRADED
+* Otherwise → HEALTHY
 
 ---
 
 ## State Transition System
 
-Transitions are recorded only when system state changes.
+* Transitions recorded only when system state changes
+* Each includes:
 
-Each transition includes:
+  * from
+  * to
+  * timestamp
+  * metrics snapshot
 
-- from
-- to
-- timestamp
-- metrics snapshot
+---
+
+## Incident System
+
+### Behavior
+
+* Incidents are generated via control API
+* Validated before creation
+* Stored in-memory for inspection
+* Used for failure simulation and observability testing
 
 ---
 
@@ -293,7 +273,11 @@ Each transition includes:
 
 ## Failure Injection System
 
-Failure injection is controlled via API-driven state mutation.
+### Behavior
+
+* Flags toggled via control API
+* Interpreted at runtime by services
+* Supports activation and recovery cycles
 
 ---
 
@@ -306,19 +290,9 @@ Failure injection is controlled via API-driven state mutation.
 
 ---
 
-### Behavior
-
-* Flags are toggled via control API
-* Failure state is interpreted by services at runtime
-* Supports both activation and recovery cycles
-
----
-
 ## Crash Simulation
 
 When `failSpike` is enabled, MonitoringService may randomly crash.
-
-This simulates real-world instability where processes terminate unexpectedly.
 
 ---
 
