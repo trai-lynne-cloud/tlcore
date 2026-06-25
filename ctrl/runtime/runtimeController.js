@@ -1,4 +1,7 @@
-const {getRuntimeStatus, setRuntimeStatus} = require('../state/runtimeStatusController');
+const {
+    getRuntimeStatus,
+    setRuntimeStatus
+} = require('../state/runtimeStatusController');
 const runtimeStatus = require('../state/runtimeStatus');
 
 // Handle startRuntime function
@@ -12,13 +15,13 @@ function startRuntime() {
     }
 
     console.log("[TLCore] Starting runtime...");
-    
+
     setRuntimeStatus(runtimeStatus.RUNNING);
 
     console.log("[TLCore] Runtime started.");
-    
+
     return getRuntimeStatus()
-}  
+}
 
 function stopRuntime() {
     const status = getRuntimeStatus();
@@ -28,11 +31,11 @@ function stopRuntime() {
         console.log("[TLCore] Runtime is already stopped.");
         return;
     }
-    
+
     console.log("[TLCore] Stopping runtime...");
-    
+
     setRuntimeStatus(runtimeStatus.STOPPED);
-    
+
     console.log("[TLCore] Runtime stopped.");
 
     return getRuntimeStatus()
@@ -43,14 +46,12 @@ function restartRuntime() {
 
     stopRuntime();
 
-    if(getRuntimeStatus() !== runtimeStatus.STOPPED) throw new Error("[TLCore] Problem Stopping runtime")
-
     startRuntime();
 
-    if (getRuntimeStatus() !== runtimeStatus.RUNNING) throw new Error("[TLCore] Problem Starting runtime")
-    
+    if (getRuntimeStatus() !== runtimeStatus.RUNNING) throw new Error("[TLCore] Problem restarting runtime")
+
     console.log("[TLCore] Runtime restarted successfully");
-    
+
     return getRuntimeStatus();
 }
 
