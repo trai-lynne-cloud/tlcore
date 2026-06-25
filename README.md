@@ -33,7 +33,7 @@ TLCore exposes a control API for managing:
 - Runtime execution state
 - Failure injection state
 
-This layer provides **system intent control** (start/stop/fail/recover) without directly blocking runtime execution behavior (for this phase).
+This layer provides **system intent control** (start/stop/restart/fail/recover) without directly blocking runtime execution behavior (for this phase).
 
 ---
 
@@ -43,6 +43,7 @@ This layer provides **system intent control** (start/stop/fail/recover) without 
 
 - Start runtime
 - Stop runtime
+- Restart runtime
 - Query runtime status
 
 #### Failure Control
@@ -82,6 +83,12 @@ Each flag modifies runtime behavior when evaluated by services.
 - `GET /ctrl/runtime/status`
 - `POST /ctrl/runtime/start`
 - `POST /ctrl/runtime/stop`
+- `POST /ctrl/runtime/restart`
+
+**Restart Behavior:**
+- Executes `stopRuntime()`
+- Then executes `startRuntime()`
+- Validates final runtime state transitions
 
 ---
 
@@ -110,10 +117,11 @@ Each flag modifies runtime behavior when evaluated by services.
 - Runtime state is stored in-memory
 - Failure state is stored in-memory
 - State updates go through controller layers
-- Failure state now supports BOTH:
+- Failure state supports BOTH:
   - activation (trigger)
   - recovery (disable)
 - Runtime execution is not yet conditionally halted (by design)
+- Restart is a **logical restart of runtime state**, not process lifecycle management
 
 ---
 
@@ -273,7 +281,7 @@ Each transition includes:
   "metric_type": "auth_latency",
   "metric_value": 120
 }
-````
+```
 
 ### Behavior
 
