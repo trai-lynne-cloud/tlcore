@@ -1,4 +1,7 @@
 const emitIncident = require("../../incidents/emitIncident");
+const {
+  getIncidents
+} = require("../../incidents/incidentStore");
 
 function triggerIncident(incidentData) {
   console.log("[TLCore][Incident] Triggered:", incidentData);
@@ -13,6 +16,11 @@ function triggerIncident(incidentData) {
   return newIncident;
 }
 
+function getAllIncidents() {
+  return getIncidents();
+}
+
 module.exports = {
-  triggerIncident
+  triggerIncident,
+  getAllIncidents
 }
