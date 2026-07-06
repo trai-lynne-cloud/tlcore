@@ -1,8 +1,12 @@
 const getRecentMetrics = require("../utils/getRecentMetrics");
 const evaluateHealth = require("../eval/evaluateHealth");
 const evaluateStableState = require("../eval/evaluateStableState");
-const { addStateToHistory, getStateHistory } = require("../state/stateHistory");
+const {
+    addStateToHistory,
+    getStateHistory
+} = require("../state/stateHistory");
 const recordStateTransition = require("../state/recordStateTransition");
+const handleDegradationIncident = require("../../incidents/degradation/degradationIncidentController");
 
 const SystemHealthMonitor = {
     start() {
@@ -30,8 +34,14 @@ const SystemHealthMonitor = {
 
         recordStateTransition(stableState);
 
+        let degradationIncident = handleDegradationIncident(stableState);
+
+        if (degradationIncident) {
+            console.log("[SystemHealthMonitor] Degradation incident created:", degradationIncident);
+        }
+
         return stableState;
     },
 };
 
-module.exports = SystemHealthMonitor; 
+module.exports = SystemHealthMonitor;
