@@ -8,11 +8,11 @@ It is designed to model continuous service execution, metric emission, system in
 
 ## Overview
 
-TLCore runs a set of independent services that continuously emit synthetic metrics and can generate structured incident events under failure conditions.
+TLCore runs a set of independent services that continuously emit synthetic metrics and can generate structured incident events through manual control or automatically from sustained system degradation.
 
 Each service operates on its own interval and produces structured output representing system behavior over time.
 
-A centralized in-memory state system controls runtime behavior, failure injection, and incident generation across all services.
+A centralized in-memory state system coordinates runtime behavior, failure injection, health evaluation, and incident generation across all services.
 
 ---
 
@@ -23,7 +23,7 @@ A centralized in-memory state system controls runtime behavior, failure injectio
 * Starts and manages all services
 * Runs continuously in a loop
 * Emits metrics at service-defined intervals
-* Can generate incident events during failures
+* Produces metrics that drive downstream health evaluation and incident detection
 
 ---
 
@@ -33,7 +33,7 @@ TLCore exposes a control API for managing:
 
 * Runtime execution state
 * Failure injection state
-* Incident simulation
+* Manual incident simulation
 
 This layer provides **system intent control** (start/stop/restart/fail/recover/trigger incidents) without directly blocking runtime execution behavior.
 
@@ -56,7 +56,7 @@ This layer provides **system intent control** (start/stop/restart/fail/recover/t
 
 #### Incident Control
 
-* Trigger synthetic incidents
+* Trigger synthetic incidents manually
 * Query incident history
 
 ---
@@ -83,7 +83,7 @@ Each flag modifies runtime behavior when evaluated by services.
 
 ---
 
-## Incident Model (Issue 14)
+## Incident Model
 
 TLCore includes a structured incident data model representing system failure events.
 
@@ -138,7 +138,8 @@ Each incident includes:
 * Incident state is stored in-memory
 * All state updates go through controller layers
 * Failure system supports activation + recovery
-* Incident system supports creation + retrieval
+* Incident system supports both manual and automatic incident creation
+* Sustained degradation is continuously evaluated by the health monitoring pipeline
 * Runtime execution is not yet conditionally halted (by design)
 * Restart is a logical runtime reset, not process lifecycle management
 
@@ -202,10 +203,16 @@ TLCore maintains a centralized in-memory metric store that persists all emitted 
 
 ## System Health Evaluation Engine
 
-* Uses rolling window of metrics
-* Applies aggregation (average)
-* Prevents transient spikes from triggering instability
+The System Health Monitor continuously evaluates emitted metrics to determine the current operational state of the system.
+
+### Behavior
+
+* Uses rolling window aggregation
+* Applies threshold-based health evaluation
 * Produces stabilized system state
+* Records system state transitions
+* Evaluates sustained degradation
+* Automatically triggers incident generation for sustained degradation
 
 ---
 
@@ -236,14 +243,54 @@ TLCore maintains a centralized in-memory metric store that persists all emitted 
 
 ---
 
+## Sustained Degradation Detection
+
+TLCore continuously evaluates stabilized system state to determine whether degradation has persisted long enough to warrant an operational incident.
+
+### Detection Rules
+
+* Only `DEGRADED` and `FAILING` states are monitored
+* A degradation timer starts when the first unhealthy state is observed
+* Returning to `HEALTHY` or `UNKNOWN` clears the degradation timer
+* Incidents are created only after the configured sustained degradation threshold has been exceeded
+
+### Duplicate Prevention
+
+To prevent repeated incident creation:
+
+* Only one degradation incident may exist for a continuous degradation period
+* Recovery resets incident tracking
+* Future sustained degradation periods may generate new incidents
+
+### Processing Flow
+
+```text
+Runtime Services
+      ↓
+Metrics
+      ↓
+Health Evaluation
+      ↓
+State History
+      ↓
+Stable State Evaluation
+      ↓
+Sustained Degradation Detection
+      ↓
+Incident Generation
+```
+
+---
+
 ## Incident System
 
 ### Behavior
 
-* Incidents are generated via control API
-* Validated before creation
-* Stored in-memory for inspection
-* Used for failure simulation and observability testing
+* Incidents may be generated manually through the Control API
+* Incidents may be generated automatically through sustained degradation detection
+* All incidents are validated before creation
+* All incidents follow a shared schema
+* Incidents are stored in-memory for inspection and observability testing
 
 ---
 
