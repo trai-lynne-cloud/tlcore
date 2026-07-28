@@ -1,5 +1,5 @@
 const { createIncident } = require("../../../incidents/schema/incident");
-const incidentStatus = require("../../../incidents/incidentStatus");
+const incidentStatus = require("../../../incidents/schema/incidentStatus");
 
 describe("Incident schema", () => {
   it("should create an incident with the correct properties", () => {

@@ -1,5 +1,5 @@
-const { createIncident } = require("./schema/incident");
-const { storeIncident } = require("./incidentStore");
+const { createIncident } = require("../schema/incident");
+const { storeIncident } = require("../store/incidentStore");
 const validateIncident = require("./validateIncident");
 
 function emitIncident(serviceId, severity) {

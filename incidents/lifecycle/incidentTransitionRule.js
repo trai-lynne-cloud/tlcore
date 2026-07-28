@@ -1,4 +1,4 @@
-const incidentStatus = require("../incidentStatus");
+const incidentStatus = require("../schema/incidentStatus");
 
 function isValidTransition(currentStatus, nextStatus) {
   const validTransitions = {

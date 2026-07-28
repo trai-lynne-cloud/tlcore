@@ -1,7 +1,7 @@
 const {
   isValidTransition,
 } = require("../../../incidents/lifecycle/incidentTransitionRule");
-const incidentStatus = require("../../../incidents/incidentStatus");
+const incidentStatus = require("../../../incidents/schema/incidentStatus");
 
 describe("Incident Lifecycle Valid Transition", () => {
   test("should allow valid transition from OPEN to ACTIVE", () => {

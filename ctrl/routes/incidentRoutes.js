@@ -1,25 +1,25 @@
-const express = require('express');
+const express = require("express");
 const {
   triggerIncident,
   getAllIncidents,
-} = require('../incidents/incidentController');
+} = require("../../incidents/controller");
 
 const router = express.Router();
 
-router.get('/incidents', (req, res) => {
+router.get("/incidents", (req, res) => {
   res.status(200).json({
     message: "[TLCore] Incidents successfully retrieved",
-    incidents: getAllIncidents()
+    incidents: getAllIncidents(),
   });
 });
 
-router.post('/ctrl/incidents/trigger', (req, res) => {
+router.post("/ctrl/incidents/trigger", (req, res) => {
   try {
     const incidentData = req.body;
 
     if (!incidentData || typeof incidentData !== "object") {
       return res.status(400).json({
-        message: "Invalid incident payload"
+        message: "Invalid incident payload",
       });
     }
 
@@ -27,15 +27,13 @@ router.post('/ctrl/incidents/trigger', (req, res) => {
 
     res.status(200).json({
       message: `[TLCore][Incident] Triggered`,
-      newIncident
+      newIncident,
     });
-
-
   } catch (error) {
     res.status(400).json({
-      message: error.message
-    })
+      message: error.message,
+    });
   }
-})
+});
 
 module.exports = router;

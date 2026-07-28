@@ -1,7 +1,7 @@
 const {
   createIncidentTransition,
 } = require("../../../incidents/schema/incidentTransition");
-const incidentStatus = require("../../../incidents/incidentStatus");
+const incidentStatus = require("../../../incidents/schema/incidentStatus");
 
 describe("Incident Transition schema", () => {
   it("should create an incident transition with the correct properties", () => {

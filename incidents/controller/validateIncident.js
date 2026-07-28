@@ -1,4 +1,4 @@
-const incidentSeverity = require("./incidentSeverity");
+const incidentSeverity = require("../schema/incidentSeverity");
 
 function validateIncident(serviceId, severity) {
   if (!serviceId || !severity) {
@@ -14,10 +14,12 @@ function validateIncident(serviceId, severity) {
   }
 
   if (!incidentSeverity[severity]) {
-    throw new Error("Invalid Incident: severity must be a valid severity level");
+    throw new Error(
+      "Invalid Incident: severity must be a valid severity level",
+    );
   }
 
   return true;
 }
 
-module.exports = validateIncident
+module.exports = validateIncident;
