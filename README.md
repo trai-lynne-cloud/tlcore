@@ -1,350 +1,55 @@
-# TLCore — Runtime Simulation Engine
+# TLCore
 
-TLCore is a lightweight runtime system that simulates multi-service behavior and controlled failure conditions for observability testing.
+TLCore is a lightweight distributed-systems laboratory for exploring service runtime behavior, telemetry, health evaluation, incident lifecycles, and controlled failure injection.
 
-It is designed to model continuous service execution, metric emission, system incidents, and system degradation under controlled fault injection.
+The project runs as a single Node.js process with in-memory state and one HTTP server.
 
----
-
-## Overview
-
-TLCore runs a set of independent services that continuously emit synthetic metrics and can generate structured incident events through manual control or automatically from sustained system degradation.
-
-Each service operates on its own interval and produces structured output representing system behavior over time.
-
-A centralized in-memory state system coordinates runtime behavior, failure injection, health evaluation, and incident generation across all services.
-
----
-
-## System Architecture
-
-### Runtime Layer
-
-* Starts and manages all services
-* Runs continuously in a loop
-* Emits metrics at service-defined intervals
-* Produces metrics that drive downstream health evaluation and incident detection
-
----
-
-## Control Layer
-
-TLCore exposes a control API for managing:
-
-* Runtime execution state
-* Failure injection state
-* Manual incident simulation
-
-This layer provides **system intent control** (start/stop/restart/fail/recover/trigger incidents) without directly blocking runtime execution behavior.
-
----
-
-### Supported Operations
-
-#### Runtime Control
-
-* Start runtime
-* Stop runtime
-* Restart runtime
-* Query runtime status
-
-#### Failure Control
-
-* Enable failure modes (trigger)
-* Disable failure modes (recover)
-* Query failure state
-
-#### Incident Control
-
-* Trigger synthetic incidents manually
-* Query incident history
-
----
-
-## Runtime States
-
-* **RUNNING** → system is logically active
-* **STOPPED** → system is logically inactive
-
-> Note: Runtime state represents system intent only. Services are not yet gated by runtime state.
-
----
-
-## Failure States
-
-Failure injection is controlled via boolean flags:
-
-* `latencySpike`
-* `queueBacklogSpike`
-* `cpuSpike`
-* `failSpike`
-
-Each flag modifies runtime behavior when evaluated by services.
-
----
-
-## Incident Model
-
-TLCore includes a structured incident data model representing system failure events.
-
-### Incident Schema
-
-Each incident includes:
-
-* `service_id` → service generating the incident
-* `severity` → severity level of incident
-* `start_time` → ISO timestamp of incident creation
-
-### Behavior
-
-* Incidents are created in-memory only
-* Incidents are immutable once created
-* Incidents are stored in a centralized incident store
-* Incidents can be retrieved via API
-* All incidents follow a consistent schema across the system
-
----
-
-## Control API Endpoints
-
-### Runtime Control
-
-* `GET /ctrl/runtime/status`
-* `POST /ctrl/runtime/start`
-* `POST /ctrl/runtime/stop`
-* `POST /ctrl/runtime/restart`
-
----
-
-### Failure Control
-
-* `GET /ctrl/fail-state`
-* `POST /ctrl/fail/trigger/:flag`
-* `POST /ctrl/fail/recover/:flag`
-
----
-
-### Incident Control
-
-* `GET /incidents` → retrieve all incidents
-* `POST /ctrl/incidents/trigger` → create new incident
-
----
-
-## Behavior Model
-
-* Runtime state is stored in-memory
-* Failure state is stored in-memory
-* Incident state is stored in-memory
-* All state updates go through controller layers
-* Failure system supports activation + recovery
-* Incident system supports both manual and automatic incident creation
-* Sustained degradation is continuously evaluated by the health monitoring pipeline
-* Runtime execution is not yet conditionally halted (by design)
-* Restart is a logical runtime reset, not process lifecycle management
-
----
-
-## Services
-
-* **AuthService**
-
-  * Simulates authentication latency
-
-* **BillingService**
-
-  * Simulates queue depth behavior
-
-* **MonitoringService**
-
-  * Simulates CPU utilization and crash conditions
-
-* **NotificationService**
-
-  * Simulates queue depth, failure rates, and error conditions
-
----
-
-## Telemetry Layer
-
-TLCore runs as a single Node.js process where runtime services, metrics, and incidents share a common in-memory state.
-
----
-
-## Metric System
-
-All services emit structured metrics using a shared utility:
-
-* service_id
-* metric_type
-* metric_value
-* timestamp
-
-Metrics represent real-time system behavior under normal and failure conditions.
-
-They are persisted in-memory.
-
-Metrics are evaluated using a rolling window strategy in downstream health processing.
-
----
-
-## Metric Storage System
-
-TLCore maintains a centralized in-memory metric store that persists all emitted metrics.
-
-### Behavior
-
-* Shared memory space for all metrics
-* Runtime services and API ingestion write to same store
-* Metrics persist for lifetime of process
-* Reset only occurs on restart
-
----
-
-## System Health Evaluation Engine
-
-The System Health Monitor continuously evaluates emitted metrics to determine the current operational state of the system.
-
-### Behavior
-
-* Uses rolling window aggregation
-* Applies threshold-based health evaluation
-* Produces stabilized system state
-* Records system state transitions
-* Evaluates sustained degradation
-* Automatically triggers incident generation for sustained degradation
-
----
-
-## State History System
-
-* Stores recent system states in bounded memory
-* Prevents oscillation in system state reporting
-
----
-
-## Stable State Evaluation
-
-* FAILING dominant → FAILING
-* DEGRADED dominant → DEGRADED
-* Otherwise → HEALTHY
-
----
-
-## State Transition System
-
-* Transitions recorded only when system state changes
-* Each includes:
-
-  * from
-  * to
-  * timestamp
-  * metrics snapshot
-
----
-
-## Sustained Degradation Detection
-
-TLCore continuously evaluates stabilized system state to determine whether degradation has persisted long enough to warrant an operational incident.
-
-### Detection Rules
-
-* Only `DEGRADED` and `FAILING` states are monitored
-* A degradation timer starts when the first unhealthy state is observed
-* Returning to `HEALTHY` or `UNKNOWN` clears the degradation timer
-* Incidents are created only after the configured sustained degradation threshold has been exceeded
-
-### Duplicate Prevention
-
-To prevent repeated incident creation:
-
-* Only one degradation incident may exist for a continuous degradation period
-* Recovery resets incident tracking
-* Future sustained degradation periods may generate new incidents
-
-### Processing Flow
-
-```text
-Runtime Services
-      ↓
-Metrics
-      ↓
-Health Evaluation
-      ↓
-State History
-      ↓
-Stable State Evaluation
-      ↓
-Sustained Degradation Detection
-      ↓
-Incident Generation
-```
-
----
-
-## Incident System
-
-### Behavior
-
-* Incidents may be generated manually through the Control API
-* Incidents may be generated automatically through sustained degradation detection
-* All incidents are validated before creation
-* All incidents follow a shared schema
-* Incidents are stored in-memory for inspection and observability testing
-
----
-
-## Metric Ingestion API
-
-### Endpoint
-
-`POST /metrics`
-
-### Request
-
-```json
-{
-  "service_id": "AuthService",
-  "metric_type": "auth_latency",
-  "metric_value": 120
-}
-```
-
-### Behavior
-
-* Validates required fields
-* Rejects malformed requests (HTTP 400)
-* Emits structured telemetry objects
-
----
-
-## Failure Injection System
-
-### Behavior
-
-* Flags toggled via control API
-* Interpreted at runtime by services
-* Supports activation and recovery cycles
-
----
-
-### Failure Flags
-
-* `latencySpike` → increases auth latency
-* `queueBacklogSpike` → increases queue depth
-* `cpuSpike` → increases CPU usage
-* `failSpike` → enables system-wide instability
-
----
-
-## Crash Simulation
-
-When `failSpike` is enabled, MonitoringService may randomly crash.
-
----
-
-## Running the System
+## Quick start
 
 ```bash
-node index.js
+npm install
+npm start
 ```
+
+The server listens at `http://localhost:3000`. Run the test suite with:
+
+```bash
+npm test
+```
+
+## API overview
+
+All application routes use the `/api` prefix.
+
+| Area | Routes |
+| --- | --- |
+| Runtime | `GET /api/runtime/status`, `POST /api/ctrl/runtime/{start,stop,restart}` |
+| Failures | `GET /api/fail-state`, `POST /api/ctrl/fail/{trigger,recover}/:flag` |
+| Metrics | `POST /api/metrics`, `GET /api/debug` |
+| Incidents | `GET /api/incidents`, `POST /api/ctrl/incidents/trigger` |
+
+For example:
+
+```bash
+curl http://localhost:3000/api/runtime/status
+curl -X POST http://localhost:3000/api/ctrl/fail/trigger/latencySpike
+curl http://localhost:3000/api/debug
+curl -X POST http://localhost:3000/api/ctrl/fail/recover/latencySpike
+```
+
+Runtime status currently represents logical intent; runtime service timers execute independently of that status.
+
+## Documentation
+
+- [Architecture overview](docs/architecture/architecture-overview.md)
+- [Runtime architecture](docs/architecture/runtime.md)
+- [API reference](docs/api/runtime.md)
+- [Core concepts](docs/concepts/health-evaluation.md)
+- [Project structure](docs/development/project-structure.md)
+- [Testing](docs/development/testing.md)
+- [Contributing](docs/development/contributing.md)
+- [Future roadmap](docs/diagrams/future-roadmap.md)
+
+## Project status
+
+TLCore is an educational simulator, not a production monitoring system. Metrics, health state, failure flags, and incidents reset when the process exits.

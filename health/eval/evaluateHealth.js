@@ -1,42 +1,36 @@
 const systemState = require("../state/systemState");
 const getRecentMetricsByType = require("../utils/getLatestMetricsByType");
-const calculateAvg = require("../../shared/utils/calculateAvg")
+const calculateAvg = require("../../shared/utils/calculateAvg");
 
 function evaluateHealth(metrics) {
-    // UNKNOWN
-    if (
-        metrics === undefined ||
-        metrics === null ||
-        metrics.length === 0
-    ) {
-        return systemState.UNKNOWN;
-    }
+  // UNKNOWN
+  if (metrics === undefined || metrics === null || metrics.length === 0) {
+    return systemState.UNKNOWN;
+  }
 
-    // Get Aveage of the last 10 metrics for each type
-    const authLatency = calculateAvg(getRecentMetricsByType(metrics, "auth_latency", 10));
-    const cpuUtilization = calculateAvg(getRecentMetricsByType(metrics, "cpu_utilization", 10));
-    const notificationFailRate = calculateAvg(getRecentMetricsByType(metrics, "notification_fail_rate", 10));
+  // Get Average of the last 10 metrics for each type
+  const authLatency = calculateAvg(
+    getRecentMetricsByType(metrics, "auth_latency", 10),
+  );
+  const cpuUtilization = calculateAvg(
+    getRecentMetricsByType(metrics, "cpu_utilization", 10),
+  );
+  const notificationFailRate = calculateAvg(
+    getRecentMetricsByType(metrics, "notification_fail_rate", 10),
+  );
 
-    // FAILING
-    if (
-        authLatency >= 200 ||
-        cpuUtilization > 85 ||
-        notificationFailRate > 20
-    ) {
-        return systemState.FAILING;
-    }
+  // FAILING
+  if (authLatency >= 200 || cpuUtilization > 85 || notificationFailRate > 20) {
+    return systemState.FAILING;
+  }
 
-    // DEGRADED 
-    if (
-        authLatency >= 30 ||
-        cpuUtilization > 60 ||
-        notificationFailRate > 10
-    ) {
-        return systemState.DEGRADED;
-    }
+  // DEGRADED
+  if (authLatency >= 30 || cpuUtilization > 60 || notificationFailRate > 10) {
+    return systemState.DEGRADED;
+  }
 
-    // HEALTHY
-    return systemState.HEALTHY;
+  // HEALTHY
+  return systemState.HEALTHY;
 }
 
 module.exports = evaluateHealth;

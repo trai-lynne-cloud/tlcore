@@ -1,10 +1,8 @@
-const {
-  triggerIncident
-} = require("../../ctrl/incidents/incidentController");
+const { triggerIncident } = require("../controller");
 const systemState = require("../../health/state/systemState");
 const {
   hasActiveDegradationIncident,
-  setActiveDegradationIncident
+  setActiveDegradationIncident,
 } = require("./degradationState");
 const evaluateSustainedDegradation = require("./evaluateSustainedDegradation");
 
@@ -13,11 +11,11 @@ function handleDegradationIncident(currentState) {
   const activeDegradationIncident = hasActiveDegradationIncident();
 
   if (sustainedDegradation && !activeDegradationIncident) {
-    setActiveDegradationIncident(true)
+    setActiveDegradationIncident(true);
 
     return triggerIncident({
       service_id: "SystemHealthMonitor",
-      severity: currentState === systemState.FAILING ? "S0" : "S2"
+      severity: currentState === systemState.FAILING ? "S0" : "S2",
     });
   }
 
