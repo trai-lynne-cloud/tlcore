@@ -1,135 +1,34 @@
-# Architecture Overview
+# Architecture overview
 
-## Purpose
+TLCore models the feedback loop of an observable distributed system inside one Node.js process. Domain boundaries are represented by modules and in-memory stores rather than separately deployed services.
 
-TLCore is organized into domain-driven modules that separate runtime execution, telemetry processing, health evaluation, incident management, and control operations.
+## Domains
 
-The architecture models how an observable distributed system behaves while remaining intentionally lightweight and easy to reason about. Although TLCore currently executes as a single Node.js process, each domain represents a logical system boundary that could be evolved into independently deployed services in the future.
+| Domain | Owns | Entry points |
+| --- | --- | --- |
+| Runtime | Simulated services and logical runtime state | `runtime/` |
+| Telemetry | Metric validation, creation, and storage | `telemetry/` |
+| Health | Metric evaluation and health-state history | `health/` |
+| Incidents | Incident creation, lifecycle, and degradation detection | `incidents/` |
+| Control | HTTP commands and queries | `ctrl/` |
 
----
-
-## Architectural Goals
-
-The architecture is designed around several core principles:
-
-- Separation of concerns through domain ownership
-- Clear flow of telemetry through the observability pipeline
-- Independent runtime services
-- Deterministic health evaluation
-- Controlled failure injection
-- Observable incident lifecycle
-- Simple, testable in-memory state management
-
----
-
-## Domain Architecture
-
-TLCore consists of five primary domains:
-
-### Runtime
-
-Responsible for simulating continuous system behavior.
-
-Responsibilities include:
-
-- Initializing runtime services
-- Executing services on independent intervals
-- Producing telemetry
-- Evaluating failure injection flags
-
----
-
-### Telemetry
-
-Responsible for collecting and storing runtime metrics.
-
-Responsibilities include:
-
-- Receiving metrics from runtime services
-- Validating telemetry
-- Maintaining the centralized telemetry store
-- Providing metrics for downstream processing
-
----
-
-### Health
-
-Responsible for determining overall system health.
-
-Responsibilities include:
-
-- Rolling-window metric evaluation
-- Threshold-based health classification
-- Stable state determination
-- Sustained degradation detection
-
----
-
-### Incidents
-
-Responsible for managing operational incidents.
-
-Responsibilities include:
-
-- Incident creation
-- Lifecycle management
-- Transition history
-- Incident storage
-
----
-
-### Control
-
-Responsible for coordinating system intent.
-
-Responsibilities include:
-
-- Runtime operations
-- Failure injection
-- Incident operations
-- HTTP API endpoints
-
----
-
-## System Flow
-
-At a high level, TLCore follows a continuous processing pipeline:
+## Data flow
 
 ```text
-Runtime Services
-      ↓
-Telemetry Store
-      ↓
-Health Evaluation
-      ↓
-Stable State Evaluation
-      ↓
-State Transition System
-      ↓
-Sustained Degradation Detection
-      ↓
-Incident System
+simulated services ──► metric store ──► health monitor
+       ▲                                      │
+       │ failure flags                        ▼
+control API ◄──────────────────────── incident store
 ```
 
----
+At startup, `index.js` starts the control server, service timers, ingestion server, and health monitor. Services emit metrics into a shared store. Every 10 seconds, the monitor evaluates recent metrics, stabilizes the result, records changes, and checks for sustained degradation. A sustained unhealthy state can create an incident.
 
-## Runtime Model
+## Architectural constraints
 
-TLCore currently executes as a single Node.js process.
+- All state is process-local and volatile.
+- Runtime services use independent timers.
+- API handlers delegate to domain modules.
+- Logical runtime state is not connected to the service timers.
+- There is no authentication, persistence, distributed transport, or retention limit.
 
-Each architectural domain communicates through centralized in-memory stores rather than network communication, allowing the project to focus on observability concepts without introducing distributed infrastructure complexity.
-
-This architecture intentionally prioritizes clarity, deterministic behavior, and rapid iteration while preserving boundaries that resemble production distributed systems.
-
----
-
-## Design Principles
-
-Several principles guide architectural decisions throughout the project:
-
-- Each domain owns its own business logic.
-- Communication occurs through well-defined domain boundaries.
-- Runtime behavior is separated from control intent.
-- Telemetry drives downstream system behavior.
-- Incident generation is event-driven rather than manually orchestrated.
-- The architecture favors readability and maintainability over premature complexity.
+See [Architecture diagram](../diagrams/architecture.md) and [Future roadmap](../diagrams/future-roadmap.md).

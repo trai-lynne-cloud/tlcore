@@ -8,7 +8,7 @@ const {
 const router = express.Router();
 
 // Handle GET request to /control/status endpoint
-router.get("/ctrl/runtime/status", (req, res) => {
+router.get("/runtime/status", (req, res) => {
   res.status(200).json({
     message: "[TLCore] Runtime status retrieved successfully",
     runtimeStatus: getRuntimeStatus(),
