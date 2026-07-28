@@ -2,13 +2,11 @@ const express = require("express");
 const emitMetric = require("../../telemetry/metrics/emitMetric");
 const { getMetrics } = require("../../telemetry/metrics/metricStore");
 
-const app = express();
-
-app.use(express.json());
+const router = express.Router();
 
 // Ingestion Endpoint
 
-app.post("/metrics", (req, res) => {
+router.post("/metrics", (req, res) => {
   const { service_id, metric_type, metric_value } = req.body;
 
   if (
@@ -28,9 +26,9 @@ app.post("/metrics", (req, res) => {
   res.send("Metrics received!");
 });
 
-app.get("/debug", (req, res) => {
+router.get("/debug", (req, res) => {
   const metrics = getMetrics();
   res.json(metrics);
 });
 
-module.exports = app;
+module.exports = router;

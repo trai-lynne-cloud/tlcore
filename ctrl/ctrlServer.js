@@ -4,6 +4,7 @@ const express = require("express");
 const failureRoutes = require("./routes/failureRoutes");
 const incidentRoutes = require("./routes/incidentRoutes");
 const runtimeRoutes = require("./routes/runtimeRoutes");
+const metrigIngestionRoutes = require("./routes/metricIngestionRoutes");
 
 const app = express();
 
@@ -23,5 +24,6 @@ app.get("/", (req, res) => {
 app.use(failureRoutes);
 app.use(incidentRoutes);
 app.use(runtimeRoutes);
+app.use(metrigIngestionRoutes);
 
 module.exports = app;

@@ -7,7 +7,7 @@ const {
 const router = express.Router();
 
 // Handle GET request to /control/fail-state endpoint
-router.get("/ctrl/fail-state", (req, res) => {
+router.get("/fail-state", (req, res) => {
   const failState = getFailState();
 
   res.status(200).json(failState);
