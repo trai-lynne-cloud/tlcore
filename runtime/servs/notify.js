@@ -1,5 +1,5 @@
 const createRandom = require("../../shared/utils/createRandom");
-const emitMetric = require("../../shared/metrics/emitMetric");
+const emitMetric = require("../../telemetry/metrics/emitMetric");
 const failInjectionState = require("../failure/state");
 
 const NotifyServ = {
@@ -7,15 +7,15 @@ const NotifyServ = {
   interval: 2, // seconds
 
   behavior() {
-    let queue_depth = failInjectionState.queueBacklogSpike ?
-      createRandom(500, 5000) //
+    let queue_depth = failInjectionState.queueBacklogSpike
+      ? createRandom(500, 5000) //
       : createRandom(0, 150);
 
     emitMetric(this.serviceName, "notification_queue_depth", queue_depth);
 
-    let failRate = failInjectionState.failSpike ?
-      createRandom(20, 100) :
-      createRandom(0, 10);
+    let failRate = failInjectionState.failSpike
+      ? createRandom(20, 100)
+      : createRandom(0, 10);
 
     emitMetric(this.serviceName, "notification_fail_rate", failRate);
 
@@ -32,7 +32,7 @@ const NotifyServ = {
 
   stop() {
     clearInterval(this.timer);
-  }
+  },
 };
 
 module.exports = NotifyServ;

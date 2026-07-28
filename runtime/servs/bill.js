@@ -1,5 +1,5 @@
 const createRandom = require("../../shared/utils/createRandom");
-const emitMetric = require("../../shared/metrics/emitMetric");
+const emitMetric = require("../../telemetry/metrics/emitMetric");
 const failInjectionState = require("../failure/state");
 
 const BillServ = {
@@ -7,8 +7,8 @@ const BillServ = {
   interval: 10, // seconds
 
   behavior() {
-    let queue_depth = failInjectionState.queueBacklogSpike ?
-      createRandom(500, 5000) //
+    let queue_depth = failInjectionState.queueBacklogSpike
+      ? createRandom(500, 5000) //
       : createRandom(0, 150);
 
     emitMetric(this.serviceName, "billing_queue_depth", queue_depth);
@@ -22,7 +22,7 @@ const BillServ = {
 
   stop() {
     clearInterval(this.timer);
-  }
+  },
 };
 
 module.exports = BillServ;

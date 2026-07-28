@@ -1,4 +1,4 @@
-const { createMetric } = require("../../../shared/schemas/metric");
+const { createMetric } = require("../../../telemetry/metrics/schema/metric");
 
 // check required fields
 

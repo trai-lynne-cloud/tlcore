@@ -1,4 +1,4 @@
-const { createIncident } = require("../../../shared/schemas/incident");
+const { createIncident } = require("../../../incidents/schema/incident");
 const incidentStatus = require("../../../incidents/incidentStatus");
 
 describe("Incident schema", () => {
