@@ -1,10 +1,10 @@
 # Incidents API
 
-Base URL: `http://localhost:3000`
+Base URL: `http://localhost:3000/api`
 
 ## Create an incident
 
-`POST /ctrl/incidents/trigger`
+`POST /api/ctrl/incidents/trigger`
 
 ```json
 { "service_id": "AuthService", "severity": "S1" }
@@ -14,13 +14,13 @@ Valid severities are `S0`, `S1`, `S2`, `S3`, and the test-only value `test`. Suc
 
 ## List incidents
 
-`GET /incidents`
+`GET /api/incidents`
 
 Returns HTTP 200 with `message` and `incidents` fields.
 
 ## Transition an incident
 
-`POST /ctrl/incidents/:incidentId/transition`
+`POST /api/ctrl/incidents/:incidentId/transition`
 
 ```json
 { "status": "ACTIVE" }
@@ -30,5 +30,5 @@ Only `OPEN → ACTIVE → RESOLVED` is allowed. Success returns HTTP 200 with th
 
 ## List transition history
 
-- `GET /incidents/transitions` returns all transition records.
-- `GET /incidents/:incidentId/transitions` returns records for one incident. An unknown ID produces an empty array.
+- `GET /api/incidents/transitions` returns all transition records.
+- `GET /api/incidents/:incidentId/transitions` returns records for one incident. An unknown ID produces an empty array.

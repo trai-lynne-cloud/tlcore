@@ -1,6 +1,5 @@
 const Runtime = require("./runtime");
 const ctrlPort = 3000;
-const ingestionPort = 3001;
 const systemHealthMonitor = require("./health/monitor/systemHealthMonitor");
 const ctrlApp = require("./ctrl/ctrlServer");
 

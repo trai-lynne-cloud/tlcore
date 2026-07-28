@@ -4,7 +4,7 @@ const express = require("express");
 const failureRoutes = require("./routes/failureRoutes");
 const incidentRoutes = require("./routes/incidentRoutes");
 const runtimeRoutes = require("./routes/runtimeRoutes");
-const metrigIngestionRoutes = require("./routes/metricIngestionRoutes");
+const metricIngestionRoutes = require("./routes/metricIngestionRoutes");
 
 const app = express();
 
@@ -21,9 +21,9 @@ app.get("/", (req, res) => {
 
 // Additional Routing
 
-app.use(failureRoutes);
-app.use(incidentRoutes);
-app.use(runtimeRoutes);
-app.use(metrigIngestionRoutes);
+app.use("/api", failureRoutes);
+app.use("/api", incidentRoutes);
+app.use("/api", runtimeRoutes);
+app.use("/api", metricIngestionRoutes);
 
 module.exports = app;

@@ -4,7 +4,7 @@ Telemetry is the boundary between simulated workload behavior and health evaluat
 
 ## Metric pipeline
 
-1. A runtime service or `POST /metrics` calls `emitMetric`.
+1. A runtime service or `POST /api/metrics` calls `emitMetric`.
 2. `validateMetric` checks the three supplied fields.
 3. `createMetric` adds an ISO-8601 timestamp.
 4. `metricStore` appends the metric to an in-memory array.

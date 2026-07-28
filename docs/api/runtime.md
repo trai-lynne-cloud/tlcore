@@ -1,12 +1,12 @@
 # Runtime API
 
-Base URL: `http://localhost:3000`
+Base URL: `http://localhost:3000/api`
 
 Runtime status represents logical intent. These operations do not start or stop service timers.
 
 ## Get status
 
-`GET /runtime/status`
+`GET /api/runtime/status`
 
 ```json
 {
@@ -17,19 +17,19 @@ Runtime status represents logical intent. These operations do not start or stop 
 
 ## Start
 
-`POST /ctrl/runtime/start`
+`POST /api/ctrl/runtime/start`
 
 Sets status to `RUNNING`. Repeating the request is accepted and leaves the state unchanged.
 
 ## Stop
 
-`POST /ctrl/runtime/stop`
+`POST /api/ctrl/runtime/stop`
 
 Sets status to `STOPPED`. Repeating the request is accepted and leaves the state unchanged.
 
 ## Restart
 
-`POST /ctrl/runtime/restart`
+`POST /api/ctrl/runtime/restart`
 
 Performs a logical stop followed by start and returns `RUNNING`. It does not restart the Node.js process or service timers.
 

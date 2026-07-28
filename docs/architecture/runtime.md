@@ -2,12 +2,12 @@
 
 The runtime owns four simulated services. `runtime/index.js` starts each service once during process boot; each service then runs on its own interval.
 
-| Service | Interval | Metrics | Failure flags |
-| --- | ---: | --- | --- |
-| `AuthService` | 9 s | `auth_latency` | `latencySpike` |
-| `BillingService` | 10 s | `billing_queue_depth` | `queueBacklogSpike` |
-| `MonitoringService` | 18 s | `cpu_utilization` | `cpuSpike`, `failSpike` |
-| `NotificationService` | 2 s | `notification_queue_depth`, `notification_fail_rate` | `queueBacklogSpike`, `failSpike` |
+| Service               | Interval | Metrics                                              | Failure flags                    |
+| --------------------- | -------: | ---------------------------------------------------- | -------------------------------- |
+| `AuthService`         |      9 s | `auth_latency`                                       | `latencySpike`                   |
+| `BillingService`      |     10 s | `billing_queue_depth`                                | `queueBacklogSpike`              |
+| `MonitoringService`   |     18 s | `cpu_utilization`                                    | `cpuSpike`, `failSpike`          |
+| `NotificationService` |      2 s | `notification_queue_depth`, `notification_fail_rate` | `queueBacklogSpike`, `failSpike` |
 
 Each timer calls the service's `behavior()` method, generates a random value, and passes it to the telemetry domain.
 
@@ -19,4 +19,4 @@ That distinction matters when interpreting `/runtime/status`: it reports intent,
 
 ## Startup
 
-`index.js` uses fixed ports: 3000 for control and 3001 for ingestion. It starts the simulated services before starting the health monitor. No graceful shutdown hook is currently installed.
+`index.js` uses fixed port: 3000. It starts the simulated services before starting the health monitor. No graceful shutdown hook is currently installed.

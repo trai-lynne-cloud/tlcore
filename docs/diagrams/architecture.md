@@ -3,8 +3,7 @@
 ```mermaid
 flowchart LR
     Client["API client"]
-    Control["Control server :3000"]
-    Ingestion["Ingestion server :3001"]
+    Server[":3000"]
     Runtime["Runtime services"]
     Failure["Failure state"]
     Metrics["Metric store"]
