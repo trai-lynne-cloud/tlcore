@@ -1,4 +1,4 @@
-const incidentStatus = require("../../incidents/incidentStatus");
+const incidentStatus = require("../incidentStatus");
 const { randomUUID } = require("crypto");
 
 function createIncident(serviceId, severity) {
