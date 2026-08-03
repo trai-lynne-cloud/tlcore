@@ -1,26 +1,26 @@
-const systemState = require('../../health/state/systemState');
+const systemState = require("../../health/state/systemState");
 const {
   clearDegradationStartTime,
   getDegradationStartTime,
   setDegradationStartTime,
-  setActiveDegradationIncident
-} = require('./degradationState');
+} = require("./degradationState");
 
 const sustainedDegradationThreshold = 30; // Number of seconds required for sustained degradation
 
 function evaluateSustainedDegradation(currentState) {
-  // Handle Healthy|Unknown evaluation 
-  if (currentState === systemState.HEALTHY ||
+  // Handle Healthy|Unknown evaluation
+  if (
+    currentState === systemState.HEALTHY ||
     currentState === systemState.UNKNOWN
   ) {
     clearDegradationStartTime();
-    setActiveDegradationIncident(false);
 
     return false;
   }
 
-  // Handle Degraded|Failing Evaluation 
-  if (currentState === systemState.DEGRADED ||
+  // Handle Degraded|Failing Evaluation
+  if (
+    currentState === systemState.DEGRADED ||
     currentState === systemState.FAILING
   ) {
     let timestamp = getDegradationStartTime();
