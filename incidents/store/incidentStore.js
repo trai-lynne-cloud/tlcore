@@ -1,3 +1,4 @@
+const incidentStatus = require("../schema/incidentStatus");
 const incidentStore = [];
 
 // Create
@@ -28,12 +29,21 @@ function updateIncidentStatus(incidentId, nextStatus) {
   );
 
   if (incidentIndex !== -1) {
-    incidentStore[incidentIndex] = {
-      ...incidentStore[incidentIndex],
-      status: nextStatus,
-    };
+    incidentStore[incidentIndex] =
+      nextStatus === incidentStatus.RESOLVED
+        ? {
+            ...incidentStore[incidentIndex],
+            status: nextStatus,
+            resolution_time: new Date().toISOString(),
+          }
+        : {
+            ...incidentStore[incidentIndex],
+            status: nextStatus,
+          };
+
     return { ...incidentStore[incidentIndex] };
   }
+
   return null;
 }
 

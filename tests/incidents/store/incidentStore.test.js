@@ -45,7 +45,7 @@ describe("Incident Store", () => {
     expect(retrievedIncident).toEqual(incident);
   });
 
-  test("should update the status of an incident", () => {
+  test("should update the status of an OPEN incident to ACTIVE", () => {
     const incident = {
       incident_id: "incident-1",
       status: incidentStatus.OPEN,
@@ -61,10 +61,42 @@ describe("Incident Store", () => {
     expect(updatedIncident).toHaveProperty("incident_id", "incident-1");
 
     expect(updatedIncident).toHaveProperty("status", incidentStatus.ACTIVE);
+    expect(updatedIncident).not.toHaveProperty("resolution_time");
 
     const retrievedIncident = getIncidentById("incident-1");
 
     expect(retrievedIncident.status).toBe(incidentStatus.ACTIVE);
+    expect(retrievedIncident).not.toHaveProperty("resolution_time");
+  });
+
+  test("should update the status of an ACTIVE incident to RESOLVED", () => {
+    const incident = {
+      incident_id: "incident-1",
+      status: incidentStatus.ACTIVE,
+    };
+
+    storeIncident(incident);
+
+    const updatedIncident = updateIncidentStatus(
+      "incident-1",
+      incidentStatus.RESOLVED,
+    );
+
+    expect(updatedIncident).toHaveProperty("incident_id", "incident-1");
+
+    expect(updatedIncident).toHaveProperty("status", incidentStatus.RESOLVED);
+    expect(updatedIncident).toHaveProperty("resolution_time");
+
+    const retrievedIncident = getIncidentById("incident-1");
+
+    expect(retrievedIncident).toHaveProperty("incident_id", "incident-1");
+
+    expect(retrievedIncident).toHaveProperty("status", incidentStatus.RESOLVED);
+    expect(retrievedIncident).toHaveProperty("resolution_time");
+
+    expect(retrievedIncident.resolution_time).toBe(
+      updatedIncident.resolution_time,
+    );
   });
 
   test("should return null when updating a non-existent incident", () => {
