@@ -1,28 +1,50 @@
+// CREATE
 let degradationStartTime = null;
-let activeDegradationIncident = false;
+let activeDegradationIncidentId = null;
+
+// READ
 
 function getDegradationStartTime() {
   return degradationStartTime;
 }
+
+function hasActiveDegradationIncident() {
+  return activeDegradationIncidentId !== null;
+}
+
+function getActiveDegradationIncidentId() {
+  return activeDegradationIncidentId;
+}
+
+// UPDATE
 
 function setDegradationStartTime() {
   degradationStartTime = new Date().toISOString();
   return degradationStartTime;
 }
 
+function setActiveDegradationIncidentId(incidentId) {
+  activeDegradationIncidentId = incidentId;
+
+  return activeDegradationIncidentId;
+}
+
+// RESET
+
 function clearDegradationStartTime() {
   degradationStartTime = null;
   return degradationStartTime;
 }
 
-function hasActiveDegradationIncident() {
-  return activeDegradationIncident;
+function clearActiveDegradationIncidentId() {
+  activeDegradationIncidentId = null;
+
+  return activeDegradationIncidentId;
 }
 
-function setActiveDegradationIncident(value) {
-  activeDegradationIncident = value;
-
-  return activeDegradationIncident;
+function clearDegradationState() {
+  clearDegradationStartTime();
+  clearActiveDegradationIncidentId();
 }
 
 module.exports = {
@@ -30,5 +52,8 @@ module.exports = {
   setDegradationStartTime,
   clearDegradationStartTime,
   hasActiveDegradationIncident,
-  setActiveDegradationIncident
+  getActiveDegradationIncidentId,
+  setActiveDegradationIncidentId,
+  clearActiveDegradationIncidentId,
+  clearDegradationState,
 };
