@@ -65,6 +65,39 @@ describe("Degradation Incident Controller", () => {
       expect(firstResult).not.toBeNull();
       expect(secondResult).toBeNull();
     });
+
+    test("Should resolve the incident when the system returns to HEALTHY state", () => {
+      handleDegradationIncident(systemState.DEGRADED);
+
+      jest.advanceTimersByTime(30000);
+
+      const activeIncident = handleDegradationIncident(systemState.DEGRADED);
+      expect(activeIncident).not.toBeNull();
+      expect(activeIncident.incident.status).toBe(incidentStatus.ACTIVE);
+
+      const resolvedIncident = handleDegradationIncident(systemState.HEALTHY);
+      expect(resolvedIncident).not.toBeNull();
+      expect(resolvedIncident.incident.status).toBe(incidentStatus.RESOLVED);
+      expect(hasActiveDegradationIncident()).toBe(false);
+      expect(resolvedIncident.transition.previous_status).toBe(
+        incidentStatus.ACTIVE,
+      );
+      expect(resolvedIncident.transition.next_status).toBe(
+        incidentStatus.RESOLVED,
+      );
+    });
+
+    test("Should leave the active incident open when the state becomes UNKNOWN", () => {
+      handleDegradationIncident(systemState.DEGRADED);
+      jest.advanceTimersByTime(30000);
+
+      const activeIncident = handleDegradationIncident(systemState.DEGRADED);
+      const result = handleDegradationIncident(systemState.UNKNOWN);
+
+      expect(result).toBeNull();
+      expect(hasActiveDegradationIncident()).toBe(true);
+      expect(activeIncident.incident.status).toBe(incidentStatus.ACTIVE);
+    });
   });
 
   describe("Handle FAILING state", () => {
@@ -107,6 +140,39 @@ describe("Degradation Incident Controller", () => {
 
       expect(firstResult).not.toBeNull();
       expect(secondResult).toBeNull();
+    });
+
+    test("Should resolve the incident when the system returns to HEALTHY state", () => {
+      handleDegradationIncident(systemState.FAILING);
+
+      jest.advanceTimersByTime(30000);
+
+      const activeIncident = handleDegradationIncident(systemState.FAILING);
+      expect(activeIncident).not.toBeNull();
+      expect(activeIncident.incident.status).toBe(incidentStatus.ACTIVE);
+
+      const resolvedIncident = handleDegradationIncident(systemState.HEALTHY);
+      expect(resolvedIncident).not.toBeNull();
+      expect(resolvedIncident.incident.status).toBe(incidentStatus.RESOLVED);
+      expect(hasActiveDegradationIncident()).toBe(false);
+      expect(resolvedIncident.transition.previous_status).toBe(
+        incidentStatus.ACTIVE,
+      );
+      expect(resolvedIncident.transition.next_status).toBe(
+        incidentStatus.RESOLVED,
+      );
+    });
+
+    test("Should leave the active incident open when the state becomes UNKNOWN", () => {
+      handleDegradationIncident(systemState.FAILING);
+      jest.advanceTimersByTime(30000);
+
+      const activeIncident = handleDegradationIncident(systemState.FAILING);
+      const result = handleDegradationIncident(systemState.UNKNOWN);
+
+      expect(result).toBeNull();
+      expect(hasActiveDegradationIncident()).toBe(true);
+      expect(activeIncident.incident.status).toBe(incidentStatus.ACTIVE);
     });
   });
 });
